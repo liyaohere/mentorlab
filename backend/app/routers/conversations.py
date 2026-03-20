@@ -55,6 +55,7 @@ async def list_conversations(
         response_items.append(
             ConversationResponse(
                 id=conv.id,
+                title=conv.title,
                 week_number=conv.week_number,
                 initiated_by=conv.initiated_by.value,
                 created_at=conv.created_at,

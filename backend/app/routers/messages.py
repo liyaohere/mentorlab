@@ -94,6 +94,19 @@ async def _process_message(
     db.add(assistant_msg)
     await db.flush()
 
+    # Generate conversation title after first user message
+    user_messages = [m for m in all_messages if m.role == MessageRole.user]
+    if len(user_messages) == 1 and not conversation.title:
+        try:
+            title_text, _ = await claude_service._call_ai(
+                "Generate a short title (3-6 words, no quotes) for a mentoring conversation that starts with this message. Just output the title, nothing else.",
+                [{"role": "user", "content": content}],
+            )
+            conversation.title = title_text.strip().strip('"').strip("'")[:200]
+            await db.flush()
+        except Exception:
+            pass  # Title generation is non-critical
+
     return user_msg, assistant_msg
 
 

@@ -19,6 +19,7 @@ class MessageResponse(BaseModel):
 
 class ConversationResponse(BaseModel):
     id: uuid.UUID
+    title: str | None = None
     week_number: int | None
     initiated_by: str
     created_at: datetime
