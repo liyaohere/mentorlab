@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MentorLab - Download</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f5f5f5; color: #212121; min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 24px; }
+        .container { max-width: 420px; text-align: center; }
+        .logo { font-size: 48px; margin-bottom: 8px; }
+        h1 { font-size: 28px; color: #1B5E20; margin-bottom: 4px; }
+        .subtitle { color: #757575; font-size: 16px; margin-bottom: 32px; }
+        .download-btn { display: inline-block; background: #1B5E20; color: white; padding: 16px 40px; border-radius: 12px; text-decoration: none; font-size: 18px; font-weight: 600; margin-bottom: 24px; transition: background 0.2s; }
+        .download-btn:hover { background: #2E7D32; }
+        .version { color: #9e9e9e; font-size: 13px; margin-bottom: 32px; }
+        .instructions { text-align: left; background: white; border-radius: 12px; padding: 20px; border: 1px solid #e0e0e0; }
+        .instructions h2 { font-size: 16px; margin-bottom: 12px; color: #1B5E20; }
+        .instructions ol { padding-left: 20px; }
+        .instructions li { margin-bottom: 8px; font-size: 14px; line-height: 1.5; color: #424242; }
+        .instructions .note { font-size: 12px; color: #757575; margin-top: 12px; font-style: italic; }
+        .ios-msg { margin-top: 20px; padding: 16px; background: #FFF3E0; border-radius: 8px; font-size: 13px; color: #E65100; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="logo">🎓</div>
+        <h1>MentorLab</h1>
+        <p class="subtitle">Your AI business mentor</p>
+
+        <div id="android-section">
+            <a href="/mentorlab-latest.apk" class="download-btn" id="download-btn">
+                Download for Android
+            </a>
+            <p class="version">Version 1.0.0 • 25 MB</p>
+
+            <div class="instructions">
+                <h2>How to install</h2>
+                <ol>
+                    <li>Tap <strong>Download for Android</strong> above</li>
+                    <li>When the download finishes, tap the notification or find the file in your Downloads folder</li>
+                    <li>If prompted, go to <strong>Settings → Install unknown apps</strong> and allow your browser to install apps</li>
+                    <li>Tap <strong>Install</strong></li>
+                    <li>Open MentorLab and enter your invite code</li>
+                </ol>
+                <p class="note">Having trouble? Contact your field coordinator or message us on WhatsApp.</p>
+            </div>
+        </div>
+
+        <div id="ios-section" style="display: none;">
+            <div class="ios-msg">
+                MentorLab is currently available for Android only. If you need an iOS version, please contact the research team.
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Simple platform detection
+        const ua = navigator.userAgent.toLowerCase();
+        if (/iphone|ipad|ipod/.test(ua)) {
+            document.getElementById('android-section').style.display = 'none';
+            document.getElementById('ios-section').style.display = 'block';
+        }
+    </script>
+</body>
+</html>

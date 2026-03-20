@@ -1,0 +1,12 @@
+# Prevent Dropbox from syncing large/fast-changing directories
+node_modules
+.expo
+android
+ios
+__pycache__
+.venv
+venv
+dist
+build
+*.pyc
+.git

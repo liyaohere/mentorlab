@@ -1,0 +1,52 @@
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f5f5f5; color: #212121; }
+
+.nav { background: #1B5E20; color: white; display: flex; align-items: center; padding: 0 24px; height: 56px; gap: 32px; }
+.nav-brand { font-size: 18px; font-weight: 700; }
+.nav-links { display: flex; gap: 4px; }
+.nav-links a { color: rgba(255,255,255,0.7); text-decoration: none; padding: 8px 16px; border-radius: 6px; font-size: 14px; font-weight: 500; }
+.nav-links a:hover { background: rgba(255,255,255,0.1); color: white; }
+.nav-links a.active { background: rgba(255,255,255,0.2); color: white; }
+
+.main { max-width: 1200px; margin: 24px auto; padding: 0 24px; }
+
+.page-title { font-size: 24px; font-weight: 700; margin-bottom: 20px; }
+
+.card { background: white; border-radius: 12px; padding: 20px; margin-bottom: 16px; border: 1px solid #e0e0e0; }
+.card-title { font-size: 14px; font-weight: 600; color: #757575; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px; }
+
+.stat-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 24px; }
+.stat-card { background: white; border-radius: 12px; padding: 20px; border: 1px solid #e0e0e0; text-align: center; }
+.stat-value { font-size: 36px; font-weight: 700; color: #1B5E20; }
+.stat-label { font-size: 13px; color: #757575; margin-top: 4px; }
+
+table { width: 100%; border-collapse: collapse; font-size: 14px; }
+th { text-align: left; padding: 10px 12px; border-bottom: 2px solid #e0e0e0; font-weight: 600; color: #757575; font-size: 12px; text-transform: uppercase; }
+td { padding: 10px 12px; border-bottom: 1px solid #f0f0f0; }
+tr:hover td { background: #fafafa; }
+
+.badge { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 12px; font-weight: 600; }
+.badge-control { background: #E3F2FD; color: #1565C0; }
+.badge-analytic { background: #FFF3E0; color: #E65100; }
+.badge-constructive { background: #E8F5E9; color: #2E7D32; }
+.badge-active { background: #E8F5E9; color: #2E7D32; }
+.badge-enrolled { background: #FFF3E0; color: #E65100; }
+.badge-dropped { background: #FFEBEE; color: #C62828; }
+
+.btn { padding: 8px 16px; border-radius: 8px; border: none; cursor: pointer; font-size: 14px; font-weight: 500; }
+.btn-primary { background: #1B5E20; color: white; }
+.btn-primary:hover { background: #2E7D32; }
+.btn-secondary { background: #e0e0e0; color: #424242; }
+.btn-danger { background: #D32F2F; color: white; }
+
+.form-group { margin-bottom: 16px; }
+.form-group label { display: block; font-size: 13px; font-weight: 600; color: #757575; margin-bottom: 4px; }
+.form-group input, .form-group select, .form-group textarea {
+  width: 100%; padding: 8px 12px; border: 1px solid #e0e0e0; border-radius: 6px; font-size: 14px;
+}
+.form-group textarea { min-height: 200px; font-family: monospace; font-size: 13px; line-height: 1.5; }
+
+.btn-row { display: flex; gap: 8px; margin-top: 16px; }
+.msg { padding: 12px; border-radius: 8px; margin-bottom: 16px; }
+.msg-success { background: #E8F5E9; color: #2E7D32; }
+.msg-error { background: #FFEBEE; color: #C62828; }
