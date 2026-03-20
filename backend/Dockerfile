@@ -15,6 +15,7 @@ RUN pip install --no-cache-dir .
 COPY app/ app/
 COPY alembic.ini .
 COPY alembic/ alembic/
+COPY static/ static/
 
 # Set PYTHONPATH so alembic and uvicorn can find the app module
 ENV PYTHONPATH=/app

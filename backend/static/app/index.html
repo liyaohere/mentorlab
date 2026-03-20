@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>MentorLab</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f5f5f5; color: #212121; height: 100vh; display: flex; flex-direction: column; }
+
+/* Nav */
+.nav { background: #1B5E20; color: white; padding: 14px 20px; font-size: 18px; font-weight: 700; display: flex; align-items: center; justify-content: space-between; }
+.nav .logout { background: none; border: 1px solid rgba(255,255,255,0.3); color: rgba(255,255,255,0.8); padding: 4px 12px; border-radius: 6px; cursor: pointer; font-size: 13px; }
+
+/* Screens */
+.screen { flex: 1; display: none; flex-direction: column; }
+.screen.active { display: flex; }
+
+/* Login */
+.login-screen { justify-content: center; align-items: center; padding: 32px; }
+.login-card { background: white; border-radius: 16px; padding: 40px; width: 100%; max-width: 400px; box-shadow: 0 4px 24px rgba(0,0,0,0.08); text-align: center; }
+.login-card h1 { color: #1B5E20; font-size: 32px; margin-bottom: 4px; }
+.login-card .sub { color: #757575; margin-bottom: 24px; }
+.login-card input, .login-card select, .login-card textarea { width: 100%; padding: 12px; border: 1px solid #e0e0e0; border-radius: 8px; font-size: 15px; margin-bottom: 12px; }
+.login-card textarea { height: 60px; resize: none; }
+.login-card .label { text-align: left; font-size: 13px; color: #757575; margin-bottom: 4px; }
+.btn { width: 100%; padding: 14px; background: #1B5E20; color: white; border: none; border-radius: 10px; font-size: 16px; font-weight: 600; cursor: pointer; }
+.btn:hover { background: #2E7D32; }
+.btn:disabled { opacity: 0.5; }
+.error { color: #D32F2F; font-size: 13px; margin-bottom: 12px; }
+.step-label { font-size: 12px; color: #757575; margin-bottom: 16px; }
+
+/* Conversation List */
+.conv-list { flex: 1; overflow-y: auto; padding: 16px; }
+.conv-card { background: white; border-radius: 12px; padding: 16px; margin-bottom: 12px; border: 1px solid #e0e0e0; cursor: pointer; }
+.conv-card:hover { border-color: #1B5E20; }
+.conv-card .week { font-weight: 600; color: #1B5E20; }
+.conv-card .preview { color: #757575; font-size: 14px; margin-top: 4px; }
+.conv-card .time { color: #9e9e9e; font-size: 12px; float: right; }
+.empty-msg { text-align: center; color: #757575; padding: 60px 20px; }
+.fab { position: fixed; bottom: 24px; right: 24px; width: 56px; height: 56px; border-radius: 28px; background: #1B5E20; color: white; border: none; font-size: 28px; cursor: pointer; box-shadow: 0 4px 12px rgba(0,0,0,0.2); }
+
+/* Chat */
+.chat-header { background: #1B5E20; color: white; padding: 14px 20px; display: flex; align-items: center; gap: 12px; }
+.chat-header .back { background: none; border: none; color: white; font-size: 20px; cursor: pointer; padding: 4px 8px; }
+.messages { flex: 1; overflow-y: auto; padding: 16px; }
+.msg-bubble { max-width: 80%; margin-bottom: 12px; padding: 10px 14px; border-radius: 16px; line-height: 1.5; font-size: 15px; }
+.msg-user { background: #1976D2; color: white; margin-left: auto; border-bottom-right-radius: 4px; }
+.msg-assistant { background: white; border: 1px solid #e0e0e0; border-bottom-left-radius: 4px; }
+.msg-time { font-size: 11px; color: #9e9e9e; margin-top: 4px; }
+.msg-time.right { text-align: right; }
+.typing { color: #757575; font-size: 14px; padding: 10px 14px; }
+.chat-input { display: flex; padding: 12px; gap: 8px; border-top: 1px solid #e0e0e0; background: white; }
+.chat-input input { flex: 1; padding: 10px 16px; border: 1px solid #e0e0e0; border-radius: 20px; font-size: 15px; outline: none; }
+.chat-input button { width: 40px; height: 40px; border-radius: 20px; background: #1B5E20; color: white; border: none; font-size: 18px; cursor: pointer; }
+.chat-input button:disabled { opacity: 0.3; }
+</style>
+</head>
+<body>
+
+<!-- Screen: Login -->
+<div id="screen-login" class="screen login-screen active">
+<div class="login-card">
+  <h1>MentorLab</h1>
+  <p class="sub">Your AI business mentor</p>
+  <div id="login-step1">
+    <p class="step-label">Enter your invite code</p>
+    <input id="invite-code" placeholder="e.g. UQTJU3RM" maxlength="8" style="text-align:center; letter-spacing:3px; text-transform:uppercase;">
+    <button class="btn" onclick="goToRegister()">Continue</button>
+  </div>
+  <div id="login-step2" style="display:none">
+    <p class="step-label">Tell us about yourself</p>
+    <p class="label">Your Name *</p>
+    <input id="reg-name" placeholder="Full name">
+    <p class="label">Phone Number</p>
+    <input id="reg-phone" placeholder="+256..." type="tel">
+    <p class="label">Venture Name</p>
+    <input id="reg-venture" placeholder="Your business name">
+    <p class="label">About your venture</p>
+    <textarea id="reg-desc" placeholder="What does your business do?"></textarea>
+    <p class="label">Industry</p>
+    <select id="reg-industry"><option value="">Select...</option><option>Agriculture</option><option>Retail</option><option>Services</option><option>Food & Beverage</option><option>Technology</option><option>Manufacturing</option><option>Other</option></select>
+    <div id="reg-error" class="error"></div>
+    <button class="btn" onclick="register()">Register</button>
+  </div>
+</div>
+</div>
+
+<!-- Screen: Conversations -->
+<div id="screen-convs" class="screen">
+<div class="nav"><span>MentorLab</span><button class="logout" onclick="doLogout()">Logout</button></div>
+<div class="conv-list" id="conv-list"></div>
+<button class="fab" onclick="newConversation()">+</button>
+</div>
+
+<!-- Screen: Chat -->
+<div id="screen-chat" class="screen">
+<div class="chat-header"><button class="back" onclick="showConvs()">←</button><span id="chat-title">Conversation</span></div>
+<div class="messages" id="messages"></div>
+<div class="chat-input">
+  <input id="chat-text" placeholder="Type a message..." onkeydown="if(event.key==='Enter')sendMsg()">
+  <button onclick="sendMsg()" id="send-btn">↑</button>
+</div>
+</div>
+
+<script>
+const API = window.location.origin; // Same server
+let token = sessionStorage.getItem('ml_token');
+let participant = JSON.parse(sessionStorage.getItem('ml_participant') || 'null');
+let currentConvId = null;
+let inviteCode = '';
+
+// --- API helpers ---
+async function api(path, opts = {}) {
+  const headers = { 'Content-Type': 'application/json', ...opts.headers };
+  if (token) headers['Authorization'] = `Bearer ${token}`;
+  const r = await fetch(`${API}${path}`, { ...opts, headers });
+  if (!r.ok) { const e = await r.json().catch(() => ({})); throw new Error(e.detail || `HTTP ${r.status}`); }
+  return r.json();
+}
+
+// --- Init ---
+if (token && participant && participant.consent_at) { showConvs(); loadConvs(); }
+
+// --- Login flow ---
+function goToRegister() {
+  inviteCode = document.getElementById('invite-code').value.trim().toUpperCase();
+  if (inviteCode.length < 4) return alert('Please enter a valid invite code.');
+  document.getElementById('login-step1').style.display = 'none';
+  document.getElementById('login-step2').style.display = 'block';
+}
+
+async function register() {
+  const name = document.getElementById('reg-name').value.trim();
+  if (!name) return showErr('Please enter your name.');
+  try {
+    const data = await api('/api/v1/auth/register', { method: 'POST', body: JSON.stringify({
+      invite_code: inviteCode, name,
+      phone_number: document.getElementById('reg-phone').value.trim(),
+      venture_name: document.getElementById('reg-venture').value.trim(),
+      venture_description: document.getElementById('reg-desc').value.trim(),
+      industry_vertical: document.getElementById('reg-industry').value,
+    })});
+    token = data.access_token;
+    participant = data.participant;
+    sessionStorage.setItem('ml_token', token);
+    // Consent
+    participant = await api('/api/v1/me/consent', { method: 'POST', body: JSON.stringify({ study_consent: true, audio_consent: false }) });
+    sessionStorage.setItem('ml_participant', JSON.stringify(participant));
+    showConvs(); loadConvs();
+  } catch (e) { showErr(e.message); }
+}
+
+function showErr(msg) { document.getElementById('reg-error').textContent = msg; }
+function doLogout() { sessionStorage.clear(); token = null; participant = null; show('screen-login'); document.getElementById('login-step1').style.display='block'; document.getElementById('login-step2').style.display='none'; }
+
+// --- Screens ---
+function show(id) { document.querySelectorAll('.screen').forEach(s => s.classList.remove('active')); document.getElementById(id).classList.add('active'); }
+function showConvs() { show('screen-convs'); }
+
+// --- Conversations ---
+async function loadConvs() {
+  try {
+    const data = await api('/api/v1/conversations');
+    const list = document.getElementById('conv-list');
+    if (data.conversations.length === 0) {
+      list.innerHTML = '<div class="empty-msg"><p style="font-size:18px;font-weight:600;margin-bottom:8px">No conversations yet</p><p>Tap + to start a conversation with your mentor.</p></div>';
+      return;
+    }
+    list.innerHTML = data.conversations.map(c => {
+      const preview = c.last_message ? c.last_message.content.substring(0, 60) + (c.last_message.content.length > 60 ? '...' : '') : 'No messages yet';
+      const time = new Date(c.last_message?.created_at || c.created_at).toLocaleDateString();
+      return `<div class="conv-card" onclick="openConv('${c.id}', ${c.week_number || 1})"><span class="time">${time}</span><div class="week">Week ${c.week_number || '?'}</div><div class="preview">${preview}</div></div>`;
+    }).join('');
+  } catch (e) { console.error(e); }
+}
+
+async function newConversation() {
+  try {
+    const data = await api('/api/v1/conversations', { method: 'POST' });
+    openConv(data.conversation.id, data.conversation.week_number || 1);
+    // Show greeting immediately
+    renderMessages(data.messages);
+  } catch (e) { alert('Could not start conversation: ' + e.message); }
+}
+
+// --- Chat ---
+async function openConv(convId, week) {
+  currentConvId = convId;
+  document.getElementById('chat-title').textContent = `Week ${week}`;
+  show('screen-chat');
+  document.getElementById('messages').innerHTML = '<div class="typing">Loading...</div>';
+  try {
+    const data = await api(`/api/v1/conversations/${convId}`);
+    renderMessages(data.messages);
+  } catch (e) { document.getElementById('messages').innerHTML = `<div class="typing">Error: ${e.message}</div>`; }
+  document.getElementById('chat-text').focus();
+}
+
+function renderMessages(msgs) {
+  const el = document.getElementById('messages');
+  el.innerHTML = msgs.map(m => {
+    const cls = m.role === 'user' ? 'msg-user' : 'msg-assistant';
+    const time = new Date(m.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    const align = m.role === 'user' ? 'right' : '';
+    return `<div class="msg-bubble ${cls}">${m.content}</div><div class="msg-time ${align}">${time}</div>`;
+  }).join('');
+  el.scrollTop = el.scrollHeight;
+}
+
+async function sendMsg() {
+  const input = document.getElementById('chat-text');
+  const text = input.value.trim();
+  if (!text || !currentConvId) return;
+  input.value = '';
+
+  // Show user message immediately
+  const messagesEl = document.getElementById('messages');
+  messagesEl.innerHTML += `<div class="msg-bubble msg-user">${text}</div><div class="msg-time right">now</div>`;
+  messagesEl.innerHTML += '<div class="typing" id="typing-indicator">Thinking...</div>';
+  messagesEl.scrollTop = messagesEl.scrollHeight;
+  document.getElementById('send-btn').disabled = true;
+
+  try {
+    const clientId = crypto.randomUUID();
+    const data = await api(`/api/v1/conversations/${currentConvId}/messages`, {
+      method: 'POST',
+      body: JSON.stringify({ content: text, input_method: 'text', client_id: clientId }),
+    });
+    // Remove typing indicator, show AI response
+    const typing = document.getElementById('typing-indicator');
+    if (typing) typing.remove();
+    const time = new Date(data.assistant_message.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    messagesEl.innerHTML += `<div class="msg-bubble msg-assistant">${data.assistant_message.content}</div><div class="msg-time">${time}</div>`;
+    messagesEl.scrollTop = messagesEl.scrollHeight;
+  } catch (e) {
+    const typing = document.getElementById('typing-indicator');
+    if (typing) typing.textContent = 'Error: ' + e.message;
+  }
+  document.getElementById('send-btn').disabled = false;
+}
+</script>
+</body>
+</html>

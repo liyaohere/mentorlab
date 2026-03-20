@@ -1,7 +1,10 @@
 from contextlib import asynccontextmanager
+from pathlib import Path
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
+from fastapi.responses import FileResponse
 
 from app.config import settings
 from app.routers.auth import me_router, router as auth_router
@@ -85,3 +88,19 @@ async def check_version(current: str = ""):
         "force_update": force_update,
         "download_url": APK_DOWNLOAD_URL,
     }
+
+
+# --- Static files: Admin panel + Web app ---
+STATIC_DIR = Path(__file__).parent.parent / "static"
+
+if (STATIC_DIR / "admin").exists():
+    @app.get("/admin")
+    async def admin_index():
+        return FileResponse(STATIC_DIR / "admin" / "index.html")
+    app.mount("/admin", StaticFiles(directory=STATIC_DIR / "admin", html=True), name="admin")
+
+if (STATIC_DIR / "app").exists():
+    @app.get("/")
+    async def app_index():
+        return FileResponse(STATIC_DIR / "app" / "index.html")
+    app.mount("/app", StaticFiles(directory=STATIC_DIR / "app", html=True), name="webapp")
