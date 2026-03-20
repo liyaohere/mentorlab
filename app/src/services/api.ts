@@ -20,17 +20,23 @@ async function request<T>(
     headers['Authorization'] = `Bearer ${authToken}`;
   }
 
-  const response = await fetch(`${API_URL}${path}`, {
+  const url = `${API_URL}${path}`;
+  console.log(`[API] ${options.method || 'GET'} ${url}`);
+
+  const response = await fetch(url, {
     ...options,
     headers,
   });
 
+  const text = await response.text();
+  console.log(`[API] ${response.status} ${text.substring(0, 200)}`);
+
   if (!response.ok) {
-    const error = await response.json().catch(() => ({ detail: 'Request failed' }));
+    const error = (() => { try { return JSON.parse(text); } catch { return { detail: text }; } })();
     throw new Error(error.detail || `HTTP ${response.status}`);
   }
 
-  return response.json();
+  return JSON.parse(text);
 }
 
 // Auth

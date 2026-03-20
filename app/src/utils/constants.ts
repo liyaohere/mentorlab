@@ -1,7 +1,5 @@
 // Backend API URL — change this for production
-export const API_URL = __DEV__
-  ? 'http://10.32.81.73:8000'   // Your Mac's local IP — phone must be on same WiFi
-  : 'https://api.mentorlab.app'; // TODO: set production URL
+export const API_URL = 'https://gold-roses-bow.loca.lt'; // Tunnel to local backend
 
 // UI Colors
 export const COLORS = {

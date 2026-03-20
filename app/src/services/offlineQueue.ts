@@ -1,5 +1,5 @@
 import * as SQLite from 'expo-sqlite';
-import { v4 as uuidv4 } from 'uuid';
+import * as Crypto from 'expo-crypto';
 import { Message, Conversation } from '../types';
 
 let db: SQLite.SQLiteDatabase | null = null;
@@ -37,7 +37,7 @@ export async function enqueueMessage(
   inputMethod: string = 'text',
 ): Promise<Message> {
   const database = await getDb();
-  const clientId = uuidv4();
+  const clientId = Crypto.randomUUID();
   const createdAt = new Date().toISOString();
 
   await database.runAsync(

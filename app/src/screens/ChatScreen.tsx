@@ -111,11 +111,18 @@ export default function ChatScreen({ route }: any) {
     setInputText('');
     setVoiceAudioUri(null);
 
-    if (audioUri) {
-      // Voice message: send with input_method='voice' and audio_url
-      await sendVoiceMessage(conversationId, text, audioUri);
-    } else {
-      await sendMessage(conversationId, text);
+    try {
+      if (audioUri) {
+        await sendVoiceMessage(conversationId, text, audioUri);
+      } else {
+        await sendMessage(conversationId, text);
+      }
+      // Re-fetch to ensure we have the latest state
+      await fetchMessages(conversationId);
+    } catch (error: any) {
+      Alert.alert('Send Error', error?.message || String(error));
+      // Still try to fetch in case the message was saved server-side
+      await fetchMessages(conversationId);
     }
   };
 

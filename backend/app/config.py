@@ -29,6 +29,9 @@ class Settings(BaseSettings):
     S3_ACCESS_KEY: str = ""
     S3_SECRET_KEY: str = ""
 
+    # Admin panel authentication
+    ADMIN_API_KEY: str = ""  # Set this to protect admin endpoints
+
     # FCM (Phase 3)
     FCM_CREDENTIALS_PATH: str = ""
 

@@ -3,7 +3,7 @@ import * as api from '../services/api';
 import * as offlineQueue from '../services/offlineQueue';
 import { syncPendingMessages, onSyncComplete } from '../services/syncService';
 import { Conversation, Message } from '../types';
-import { v4 as uuidv4 } from 'uuid';
+import * as Crypto from 'expo-crypto';
 
 interface ConversationState {
   conversations: Conversation[];
@@ -130,9 +130,21 @@ export const useConversationStore = create<ConversationState>((set, get) => ({
           isSending: false,
         };
       });
-    } catch {
-      // Message stays as pending — sync service will retry
-      set({ isSending: false });
+    } catch (error) {
+      console.error('sendMessage failed:', error);
+      // Update the optimistic message to show failed status
+      set((state) => {
+        const msgs = state.messages[conversationId] || [];
+        const updated = msgs.map((m) =>
+          m.client_id === localMsg.client_id
+            ? { ...m, sync_status: 'failed' as const }
+            : m,
+        );
+        return {
+          messages: { ...state.messages, [conversationId]: updated },
+          isSending: false,
+        };
+      });
     }
   },
 

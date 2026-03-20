@@ -1,4 +1,6 @@
+import { useState } from 'react';
 import { BrowserRouter, Routes, Route, NavLink } from 'react-router-dom';
+import { isLoggedIn, login, logout } from './api';
 import DashboardPage from './pages/DashboardPage';
 import ParticipantsPage from './pages/ParticipantsPage';
 import ExportPage from './pages/ExportPage';
@@ -17,11 +19,67 @@ function Nav() {
         <NavLink to="/schedule">Schedule</NavLink>
         <NavLink to="/export">Export</NavLink>
       </div>
+      <button
+        className="btn"
+        style={{ marginLeft: 'auto', color: 'rgba(255,255,255,0.7)', background: 'none', border: '1px solid rgba(255,255,255,0.3)' }}
+        onClick={() => { logout(); window.location.reload(); }}
+      >
+        Logout
+      </button>
     </nav>
   );
 }
 
+function LoginPage() {
+  const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
+
+  const handleLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    setError('');
+    try {
+      await login(password);
+      window.location.reload();
+    } catch (err: any) {
+      setError(err.message || 'Login failed');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '100vh', background: '#f5f5f5' }}>
+      <div style={{ background: 'white', borderRadius: 16, padding: 40, width: 380, boxShadow: '0 4px 24px rgba(0,0,0,0.08)' }}>
+        <h1 style={{ color: '#1B5E20', fontSize: 28, marginBottom: 4 }}>MentorLab</h1>
+        <p style={{ color: '#757575', marginBottom: 32 }}>Admin Dashboard</p>
+        <form onSubmit={handleLogin}>
+          <div className="form-group">
+            <label>Password</label>
+            <input
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              placeholder="Enter admin password"
+              autoFocus
+            />
+          </div>
+          {error && <div className="msg msg-error">{error}</div>}
+          <button className="btn btn-primary" style={{ width: '100%' }} disabled={loading}>
+            {loading ? 'Logging in...' : 'Log In'}
+          </button>
+        </form>
+      </div>
+    </div>
+  );
+}
+
 export default function App() {
+  if (!isLoggedIn()) {
+    return <LoginPage />;
+  }
+
   return (
     <BrowserRouter>
       <Nav />

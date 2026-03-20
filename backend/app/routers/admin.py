@@ -11,6 +11,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
 from app.database import get_db
+from app.middleware.admin_auth import require_admin
 from app.models.conversation import Conversation
 from app.models.message import Message
 from app.models.notification import Notification
@@ -18,11 +19,12 @@ from app.models.participant import ArmType, InviteCode, Participant, Participant
 from app.models.survey import Survey
 from app.utils.invite_codes import generate_invite_code
 
-router = APIRouter(prefix="/api/v1/admin", tags=["admin"])
-
-# NOTE: In production, these endpoints should be protected by admin auth.
-# For Phase 4 / pilot, we leave them open to simplify testing.
-# Phase 5 should add proper admin JWT auth.
+# All admin endpoints require the X-Admin-Key header
+router = APIRouter(
+    prefix="/api/v1/admin",
+    tags=["admin"],
+    dependencies=[Depends(require_admin)],
+)
 
 
 # --- Participant Management ---
@@ -141,12 +143,33 @@ async def upload_participants(
 
 # --- Data Export ---
 
+async def _log_export(db: AsyncSession, export_type: str, cohort_id: str | None, row_count: int):
+    """Log every export to admin_events for download history."""
+    from app.models.admin import AdminEvent
+    event = AdminEvent(
+        action=f"export_{export_type}",
+        metadata_={
+            "type": export_type,
+            "cohort_id": cohort_id,
+            "row_count": row_count,
+            "timestamp": datetime.now(timezone.utc).isoformat(),
+        },
+    )
+    db.add(event)
+    await db.commit()
+
+
 @router.get("/export/transcripts")
 async def export_transcripts(
     cohort_id: str | None = None,
     db: AsyncSession = Depends(get_db),
 ):
-    """Export all chat transcripts as CSV."""
+    """Export all chat transcripts as CSV.
+
+    Each message includes conversation_number (sequential per participant,
+    so you can tell which messages belong to the same chat session) and
+    message_order (sequential within a conversation, starting from 1).
+    """
     query = (
         select(Message, Conversation, Participant)
         .join(Conversation, Message.conversation_id == Conversation.id)
@@ -163,24 +186,52 @@ async def export_transcripts(
     writer = csv.writer(output)
     writer.writerow([
         "participant_id", "participant_name", "arm", "cohort",
-        "conversation_id", "week_number", "initiated_by",
-        "message_role", "message_content", "input_method", "timestamp",
+        "conversation_id", "conversation_number", "week_number", "initiated_by",
+        "message_order", "message_role", "message_content", "input_method", "timestamp",
     ])
 
+    # Track conversation numbering per participant
+    participant_conv_counter: dict[str, int] = {}  # participant_id -> next conv number
+    current_conv_id: str | None = None
+    current_conv_number: int = 0
+    message_order: int = 0
+
     for msg, conv, participant in rows:
+        pid = str(participant.id)
+        cid = str(conv.id)
+
+        # New conversation?
+        if cid != current_conv_id:
+            current_conv_id = cid
+            message_order = 0
+            if pid not in participant_conv_counter:
+                participant_conv_counter[pid] = 1
+            else:
+                participant_conv_counter[pid] += 1
+            current_conv_number = participant_conv_counter[pid]
+
+        message_order += 1
+
         writer.writerow([
-            str(participant.id), participant.name, participant.arm.value,
+            pid, participant.name, participant.arm.value,
             participant.cohort_id or "",
-            str(conv.id), conv.week_number or "", conv.initiated_by.value,
-            msg.role.value, msg.content, msg.input_method.value,
+            cid, current_conv_number, conv.week_number or "", conv.initiated_by.value,
+            message_order, msg.role.value, msg.content, msg.input_method.value,
             msg.created_at.isoformat() if msg.created_at else "",
         ])
+
+    # Log this download
+    await _log_export(db, "transcripts", cohort_id, len(rows))
+
+    # Timestamped filename
+    ts = datetime.now(timezone.utc).strftime("%Y%m%d_%H%M%S")
+    filename = f"mentorlab_transcripts_{ts}.csv"
 
     output.seek(0)
     return StreamingResponse(
         output,
         media_type="text/csv",
-        headers={"Content-Disposition": "attachment; filename=transcripts.csv"},
+        headers={"Content-Disposition": f"attachment; filename={filename}"},
     )
 
 
@@ -190,6 +241,8 @@ async def export_surveys(
     db: AsyncSession = Depends(get_db),
 ):
     """Export all survey responses as CSV."""
+    import json
+
     query = (
         select(Survey, Participant)
         .join(Participant, Survey.participant_id == Participant.id)
@@ -209,7 +262,6 @@ async def export_surveys(
     ])
 
     for survey, participant in rows:
-        import json
         writer.writerow([
             str(participant.id), participant.name, participant.arm.value,
             participant.cohort_id or "",
@@ -218,12 +270,44 @@ async def export_surveys(
             json.dumps(survey.responses),
         ])
 
+    # Log this download
+    await _log_export(db, "surveys", cohort_id, len(rows))
+
+    # Timestamped filename
+    ts = datetime.now(timezone.utc).strftime("%Y%m%d_%H%M%S")
+    filename = f"mentorlab_surveys_{ts}.csv"
+
     output.seek(0)
     return StreamingResponse(
         output,
         media_type="text/csv",
-        headers={"Content-Disposition": "attachment; filename=surveys.csv"},
+        headers={"Content-Disposition": f"attachment; filename={filename}"},
     )
+
+
+@router.get("/export/history")
+async def get_export_history(db: AsyncSession = Depends(get_db)):
+    """Get the history of all data exports (who downloaded what, when)."""
+    from app.models.admin import AdminEvent
+    result = await db.execute(
+        select(AdminEvent)
+        .where(AdminEvent.action.like("export_%"))
+        .order_by(AdminEvent.created_at.desc())
+        .limit(50)
+    )
+    events = result.scalars().all()
+    return {
+        "exports": [
+            {
+                "id": str(e.id),
+                "type": e.metadata_.get("type", "") if e.metadata_ else "",
+                "cohort_id": e.metadata_.get("cohort_id") if e.metadata_ else None,
+                "row_count": e.metadata_.get("row_count", 0) if e.metadata_ else 0,
+                "downloaded_at": e.metadata_.get("timestamp", "") if e.metadata_ else "",
+            }
+            for e in events
+        ]
+    }
 
 
 # --- Engagement Dashboard ---
@@ -276,11 +360,7 @@ async def get_dashboard(
     result = await db.execute(voice_query)
     input_methods = {row[0].value if hasattr(row[0], 'value') else row[0]: row[1] for row in result.all()}
 
-    # Token usage (cost tracking)
-    token_query = (
-        select(func.sum(func.cast(Message.token_usage["input_tokens"].as_string(), func.text())))
-    )
-    # Simplified: just count total messages with token_usage
+    # Total AI messages (for cost estimate)
     total_msg_result = await db.execute(
         select(func.count(Message.id)).where(Message.role == "assistant")
     )

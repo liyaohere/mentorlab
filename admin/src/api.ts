@@ -1,15 +1,62 @@
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
 
+// Admin API key — set after login, persisted in sessionStorage
+let adminKey: string | null = sessionStorage.getItem('admin_key');
+
+export function setAdminKey(key: string) {
+  adminKey = key;
+  sessionStorage.setItem('admin_key', key);
+}
+
+export function getAdminKey(): string | null {
+  return adminKey;
+}
+
+export function logout() {
+  adminKey = null;
+  sessionStorage.removeItem('admin_key');
+}
+
+export function isLoggedIn(): boolean {
+  return !!adminKey;
+}
+
 async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
-  const response = await fetch(`${API_URL}${path}`, {
-    ...options,
-    headers: { 'Content-Type': 'application/json', ...options.headers },
-  });
+  const headers: Record<string, string> = {
+    'Content-Type': 'application/json',
+    ...(options.headers as Record<string, string>),
+  };
+  if (adminKey) {
+    headers['X-Admin-Key'] = adminKey;
+  }
+
+  const response = await fetch(`${API_URL}${path}`, { ...options, headers });
+
+  if (response.status === 401) {
+    logout();
+    window.location.reload();
+    throw new Error('Session expired');
+  }
   if (!response.ok) {
     const err = await response.json().catch(() => ({ detail: 'Request failed' }));
     throw new Error(err.detail || `HTTP ${response.status}`);
   }
   return response.json();
+}
+
+// Login
+export async function login(password: string): Promise<void> {
+  const response = await fetch(`${API_URL}/api/v1/admin/login`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ password }),
+  });
+  if (!response.ok) {
+    const err = await response.json().catch(() => ({ detail: 'Login failed' }));
+    throw new Error(err.detail || 'Invalid password');
+  }
+  const data = await response.json();
+  setAdminKey(data.api_key);
 }
 
 // Dashboard
@@ -23,8 +70,11 @@ export const getParticipants = (cohort?: string) =>
 export async function uploadParticipantsCSV(file: File) {
   const formData = new FormData();
   formData.append('file', file);
+  const headers: Record<string, string> = {};
+  if (adminKey) headers['X-Admin-Key'] = adminKey;
   const response = await fetch(`${API_URL}/api/v1/admin/participants/upload`, {
     method: 'POST',
+    headers,
     body: formData,
   });
   return response.json();
@@ -43,8 +93,14 @@ export const setSchedule = (data: any) =>
 export const triggerConversations = (cohortId: string) =>
   request<any>(`/api/v1/admin/trigger/${cohortId}`, { method: 'POST' });
 
-// Export (returns download URLs)
-export const exportTranscriptsUrl = (cohort?: string) =>
-  `${API_URL}/api/v1/admin/export/transcripts${cohort ? `?cohort_id=${cohort}` : ''}`;
-export const exportSurveysUrl = (cohort?: string) =>
-  `${API_URL}/api/v1/admin/export/surveys${cohort ? `?cohort_id=${cohort}` : ''}`;
+// Export (download URLs need the key as query param since <a> tags can't set headers)
+export const exportTranscriptsUrl = (cohort?: string) => {
+  const params = new URLSearchParams();
+  if (cohort) params.set('cohort_id', cohort);
+  return `${API_URL}/api/v1/admin/export/transcripts?${params}`;
+};
+export const exportSurveysUrl = (cohort?: string) => {
+  const params = new URLSearchParams();
+  if (cohort) params.set('cohort_id', cohort);
+  return `${API_URL}/api/v1/admin/export/surveys?${params}`;
+};

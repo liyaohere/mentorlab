@@ -61,6 +61,18 @@ async def health_check():
     return {"status": "ok", "version": "0.1.0"}
 
 
+@app.post("/api/v1/admin/login")
+async def admin_login(credentials: dict):
+    """Validate admin credentials and return the API key for subsequent requests."""
+    password = credentials.get("password", "")
+    if not settings.ADMIN_API_KEY:
+        return {"api_key": "", "message": "No admin key configured — open access"}
+    if password == settings.ADMIN_API_KEY:
+        return {"api_key": settings.ADMIN_API_KEY}
+    from fastapi import HTTPException
+    raise HTTPException(status_code=401, detail="Invalid password")
+
+
 @app.get("/api/v1/version")
 async def check_version(current: str = ""):
     """App calls this on launch to check if an update is available."""
