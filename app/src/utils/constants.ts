@@ -1,5 +1,5 @@
 // Backend API URL — change this for production
-export const API_URL = 'https://gold-roses-bow.loca.lt'; // Tunnel to local backend
+export const API_URL = 'https://mentorlab-api-production.up.railway.app'; // Railway cloud
 
 // UI Colors
 export const COLORS = {
