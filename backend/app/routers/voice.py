@@ -39,8 +39,9 @@ async def transcribe_audio(
     Upload an audio file, transcribe it via Whisper, and optionally store in S3.
     Returns the transcript text for the client to review before sending as a message.
     """
-    # Validate content type
-    if audio.content_type and audio.content_type not in ALLOWED_AUDIO_TYPES:
+    # Validate content type (strip codec parameters like ";codecs=opus")
+    base_type = audio.content_type.split(";")[0].strip() if audio.content_type else ""
+    if base_type and base_type not in ALLOWED_AUDIO_TYPES:
         raise HTTPException(
             status_code=400,
             detail=f"Unsupported audio format: {audio.content_type}. Use m4a, mp3, ogg, wav, or webm.",

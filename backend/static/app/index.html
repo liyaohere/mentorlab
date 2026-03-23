@@ -27,7 +27,7 @@
 body { font-family: 'Inter', -apple-system, sans-serif; background: var(--bg); color: var(--text); height: 100dvh; display: flex; flex-direction: column; -webkit-font-smoothing: antialiased; }
 
 /* ===== SCREENS ===== */
-.screen { flex: 1; display: none; flex-direction: column; }
+.screen { flex: 1; display: none; flex-direction: column; min-height: 0; }
 .screen.active { display: flex; }
 
 /* ===== LOGIN ===== */
@@ -51,23 +51,24 @@ body { font-family: 'Inter', -apple-system, sans-serif; background: var(--bg); c
 .error-msg { color: #D32F2F; font-size: 14px; margin-bottom: 12px; }
 .step-info { font-size: 13px; color: var(--text-light); margin-bottom: 20px; }
 
-/* ===== CONVERSATION LIST ===== */
-.convs-header { padding: 20px 24px 16px; display: flex; align-items: center; justify-content: space-between; }
-.convs-header h1 { font-family: 'Newsreader', serif; font-size: 28px; font-weight: 500; color: var(--text); }
-.convs-header .logout-btn { font-size: 13px; color: var(--text-light); background: none; border: 1px solid var(--border); padding: 6px 14px; border-radius: 8px; cursor: pointer; font-family: 'Inter', sans-serif; }
-.conv-list { flex: 1; overflow-y: auto; padding: 0 24px 100px; }
-.conv-card { background: var(--surface); border-radius: 16px; padding: 18px 20px; margin-bottom: 10px; border: 1px solid var(--border); cursor: pointer; transition: all 0.15s; }
-.conv-card:hover { border-color: var(--green-light); box-shadow: 0 2px 12px rgba(0,0,0,0.04); }
-.conv-title { font-size: 17px; font-weight: 600; color: var(--text); margin-bottom: 4px; }
-.conv-meta { display: flex; align-items: center; gap: 8px; }
-.conv-week { font-size: 11px; font-weight: 600; color: var(--green); background: var(--green-subtle); padding: 2px 8px; border-radius: 4px; }
-.conv-time { font-size: 12px; color: var(--text-light); }
-.conv-preview { font-size: 14px; color: var(--text-secondary); margin-top: 6px; line-height: 1.4; }
-.empty-state { text-align: center; padding: 80px 32px; }
-.empty-state h2 { font-family: 'Newsreader', serif; font-size: 22px; font-weight: 400; margin-bottom: 8px; }
-.empty-state p { color: var(--text-secondary); font-size: 15px; }
-.fab { position: fixed; bottom: 28px; right: 28px; width: 60px; height: 60px; border-radius: 50%; background: var(--green); color: white; border: none; font-size: 30px; cursor: pointer; box-shadow: 0 4px 20px rgba(27,94,32,0.35); transition: all 0.2s; }
-.fab:hover { transform: scale(1.08); box-shadow: 0 6px 24px rgba(27,94,32,0.4); }
+/* ===== DRAWER ===== */
+.drawer-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 100; opacity: 0; pointer-events: none; transition: opacity 0.25s; }
+.drawer-overlay.open { opacity: 1; pointer-events: auto; }
+.drawer { position: fixed; top: 0; left: 0; bottom: 0; width: 300px; max-width: 80vw; background: var(--surface); z-index: 101; transform: translateX(-100%); transition: transform 0.25s ease; display: flex; flex-direction: column; }
+.drawer-overlay.open .drawer { transform: translateX(0); }
+.drawer-header { padding: 24px 20px 16px; display: flex; flex-direction: column; border-bottom: 1px solid var(--border); }
+.drawer-header h2 { font-family: 'Newsreader', serif; font-size: 22px; font-weight: 500; }
+.drawer-new-btn { background: var(--green); color: white; border: none; border-radius: 12px; padding: 14px 20px; font-size: 15px; font-weight: 600; font-family: 'Inter', sans-serif; cursor: pointer; width: 100%; margin-top: 12px; transition: background 0.15s; }
+.drawer-new-btn:hover { background: #2E7D32; }
+.drawer-convs { flex: 1; overflow-y: auto; padding: 12px 16px; }
+.drawer-conv { padding: 14px 16px; border-radius: 12px; margin-bottom: 6px; cursor: pointer; transition: background 0.15s; }
+.drawer-conv:hover { background: var(--bg); }
+.drawer-conv.active { background: var(--green-subtle); }
+.drawer-conv-title { font-size: 15px; font-weight: 600; color: var(--text); margin-bottom: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.drawer-conv-meta { font-size: 12px; color: var(--text-light); }
+.drawer-footer { padding: 16px 20px; border-top: 1px solid var(--border); }
+.drawer-footer .logout-btn { font-size: 13px; color: var(--text-light); background: none; border: 1px solid var(--border); padding: 6px 14px; border-radius: 8px; cursor: pointer; font-family: 'Inter', sans-serif; width: 100%; }
+.menu-btn { background: none; border: none; font-size: 22px; cursor: pointer; color: var(--text); padding: 4px; }
 
 /* ===== CHAT ===== */
 .chat-header { padding: 16px 20px; display: flex; align-items: center; gap: 14px; border-bottom: 1px solid var(--border); background: var(--surface); }
@@ -91,30 +92,35 @@ body { font-family: 'Inter', -apple-system, sans-serif; background: var(--bg); c
 /* Voice mode (default) */
 .voice-container { display: flex; flex-direction: column; align-items: center; gap: 12px; }
 .voice-btn {
-  width: 72px; height: 72px; border-radius: 50%; border: none; cursor: pointer;
+  width: 80px; height: 80px; border-radius: 50%; border: none; cursor: pointer;
   background: linear-gradient(135deg, #2E7D32, #43A047);
   box-shadow: 0 4px 24px rgba(27,94,32,0.3);
   display: flex; align-items: center; justify-content: center;
   transition: all 0.2s; position: relative;
+  animation: idle-glow 3s ease-in-out infinite;
 }
-.voice-btn:hover { transform: scale(1.06); box-shadow: 0 6px 28px rgba(27,94,32,0.4); }
-.voice-btn svg { width: 28px; height: 28px; fill: white; }
+.voice-btn:hover { transform: scale(1.06); }
+.voice-btn:active { transform: scale(0.96); }
+.voice-btn svg { width: 32px; height: 32px; fill: white; }
+@keyframes idle-glow {
+  0%, 100% { box-shadow: 0 4px 24px rgba(27,94,32,0.3), 0 0 0 0px rgba(76,175,80,0.12); }
+  50% { box-shadow: 0 4px 24px rgba(27,94,32,0.3), 0 0 0 12px rgba(76,175,80,0.08); }
+}
 .voice-btn.recording {
   background: linear-gradient(135deg, #C62828, #E53935);
-  box-shadow: 0 4px 24px rgba(198,40,40,0.3);
-  animation: pulse-ring 1.2s infinite;
+  animation: pulse-ring 1.2s ease-out infinite;
 }
 @keyframes pulse-ring {
-  0% { box-shadow: 0 0 0 0 rgba(198,40,40,0.4); }
-  70% { box-shadow: 0 0 0 16px rgba(198,40,40,0); }
+  0% { box-shadow: 0 0 0 0 rgba(198,40,40,0.5); }
+  70% { box-shadow: 0 0 0 20px rgba(198,40,40,0); }
   100% { box-shadow: 0 0 0 0 rgba(198,40,40,0); }
 }
-.voice-label { font-size: 13px; color: var(--text-secondary); }
-.voice-duration { font-size: 18px; font-weight: 600; color: #C62828; }
+.voice-label { font-size: 18px; color: var(--text-secondary); font-weight: 600; }
+.voice-label.voice-duration { font-size: 22px; font-weight: 700; color: #C62828; font-variant-numeric: tabular-nums; }
 .mode-switch { font-size: 13px; color: var(--text-light); background: none; border: none; cursor: pointer; text-decoration: underline; font-family: 'Inter', sans-serif; }
 
 /* Text mode */
-.text-container { display: flex; align-items: flex-end; gap: 10px; }
+.text-container { display: flex; align-items: flex-end; gap: 10px; position: relative; padding-bottom: 28px; }
 .text-container input {
   flex: 1; padding: 14px 18px; border: 1.5px solid var(--border); border-radius: 24px;
   font-size: 17px; font-family: 'Inter', sans-serif; color: var(--text); background: var(--bg);
@@ -124,14 +130,15 @@ body { font-family: 'Inter', -apple-system, sans-serif; background: var(--bg); c
 .text-send { width: 46px; height: 46px; border-radius: 50%; background: var(--green); color: white; border: none; font-size: 20px; cursor: pointer; transition: all 0.15s; }
 .text-send:disabled { opacity: 0.3; }
 .text-send:hover:not(:disabled) { background: #2E7D32; }
+.voice-toggle-link { position: absolute; bottom: 2px; left: 50%; transform: translateX(-50%); font-size: 12px; }
 
 /* Transcribing state */
-.transcribing { display: flex; align-items: center; justify-content: center; gap: 10px; padding: 14px; color: var(--green); font-size: 14px; font-weight: 500; }
-.transcribing .spinner { width: 18px; height: 18px; border: 2px solid var(--green-subtle); border-top-color: var(--green); border-radius: 50%; animation: spin 0.8s linear infinite; }
+.transcribing { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; padding: 20px; color: var(--green); font-size: 14px; font-weight: 500; }
+.transcribing .spinner { width: 24px; height: 24px; border: 3px solid var(--green-subtle); border-top-color: var(--green); border-radius: 50%; animation: spin 0.8s linear infinite; }
 @keyframes spin { to { transform: rotate(360deg); } }
 
 /* Voice preview */
-.voice-preview { display: flex; align-items: center; gap: 10px; padding: 10px 16px; background: var(--green-subtle); border-radius: 12px; margin-bottom: 10px; font-size: 13px; color: var(--green); }
+.voice-preview { display: flex; align-items: center; gap: 10px; padding: 12px 16px; background: var(--green-subtle); border-radius: 12px; margin-bottom: 10px; font-size: 13px; color: var(--green); border: 1px solid rgba(76,175,80,0.2); }
 .voice-preview .clear { color: #C62828; font-weight: 600; cursor: pointer; margin-left: auto; background: none; border: none; font-family: 'Inter', sans-serif; font-size: 13px; }
 
 /* Responsive */
@@ -149,44 +156,50 @@ body { font-family: 'Inter', -apple-system, sans-serif; background: var(--bg); c
   <div class="logo">MentorLab</div>
   <div class="tagline">Your AI business mentor</div>
   <div class="form-box">
-    <div id="step1">
-      <p class="step-info">Enter your invite code to get started</p>
-      <input id="invite-code" class="code-input" placeholder="XXXXXXXX" maxlength="8">
-      <button class="btn-primary" onclick="goStep2()">Continue</button>
-    </div>
-    <div id="step2" style="display:none">
-      <p class="step-info">Tell us about yourself</p>
+    <!-- Step 1: Create account (minimal) -->
+    <div id="step-account">
+      <p class="step-info">Create your account to get started</p>
       <p class="field-label">Your Name</p>
       <input id="r-name" placeholder="Full name">
       <p class="field-label">Phone Number</p>
       <input id="r-phone" placeholder="+256..." type="tel">
+      <div id="r-error" class="error-msg"></div>
+      <button class="btn-primary" onclick="doRegister()">Continue</button>
+    </div>
+    <!-- Step 2: Onboarding survey (only once) -->
+    <div id="step-survey" style="display:none">
+      <p class="step-info">Tell us about your business</p>
       <p class="field-label">Venture Name</p>
       <input id="r-venture" placeholder="Your business name">
       <p class="field-label">About your venture</p>
       <textarea id="r-desc" placeholder="What does your business do?"></textarea>
       <p class="field-label">Industry</p>
       <select id="r-industry"><option value="">Select...</option><option>Agriculture</option><option>Retail</option><option>Services</option><option>Food & Beverage</option><option>Technology</option><option>Manufacturing</option><option>Other</option></select>
-      <div id="r-error" class="error-msg"></div>
-      <button class="btn-primary" onclick="doRegister()">Start</button>
+      <div id="s-error" class="error-msg"></div>
+      <button class="btn-primary" onclick="doSurvey()">Start chatting</button>
     </div>
   </div>
 </div>
 </div>
 
-<!-- ===== CONVERSATIONS ===== -->
-<div id="screen-convs" class="screen">
-<div class="convs-header">
-  <h1>MentorLab</h1>
-  <button class="logout-btn" onclick="doLogout()">Log out</button>
-</div>
-<div class="conv-list" id="conv-list"></div>
-<button class="fab" onclick="newConv()">+</button>
+<!-- ===== DRAWER ===== -->
+<div id="drawer-overlay" class="drawer-overlay" onclick="closeDrawer()">
+  <div class="drawer" onclick="event.stopPropagation()">
+    <div class="drawer-header">
+      <h2>Conversations</h2>
+      <button class="drawer-new-btn" onclick="newConv()">+ New</button>
+    </div>
+    <div class="drawer-convs" id="drawer-convs"></div>
+    <div class="drawer-footer">
+      <button class="logout-btn" onclick="doLogout()">Log out</button>
+    </div>
+  </div>
 </div>
 
 <!-- ===== CHAT ===== -->
 <div id="screen-chat" class="screen">
 <div class="chat-header">
-  <button class="chat-back" onclick="goHome()">←</button>
+  <button class="menu-btn" onclick="openDrawer()">☰</button>
   <div class="chat-header-info">
     <h2 id="chat-title">Conversation</h2>
     <span class="week-tag" id="chat-week"></span>
@@ -211,17 +224,30 @@ body { font-family: 'Inter', -apple-system, sans-serif; background: var(--bg); c
   <div id="input-text" class="text-container" style="display:none">
     <input id="chat-input" placeholder="Type a message..." onkeydown="if(event.key==='Enter')sendText()">
     <button class="text-send" id="send-btn" onclick="sendText()">↑</button>
-    <button class="mode-switch" onclick="switchToVoice()" style="position:absolute;bottom:4px;left:50%;transform:translateX(-50%);font-size:12px;">use voice</button>
+    <button class="mode-switch voice-toggle-link" onclick="switchToVoice()">use voice</button>
   </div>
 </div>
 </div>
 
 <script>
 const API = window.location.origin;
-let token = sessionStorage.getItem('t');
-let participant = JSON.parse(sessionStorage.getItem('p') || 'null');
-let convId = null, invCode = '';
+let token = localStorage.getItem('t');
+let participant = JSON.parse(localStorage.getItem('p') || 'null');
+let convId = null, invCode = 'HDBU38JZ';
 let mediaRec = null, audioChunks = [], isRecording = false, recTimer = null, recSecs = 0;
+let lastInputMethod = 'text';
+const voiceSupported = !!(navigator.mediaDevices && navigator.mediaDevices.getUserMedia);
+
+// Detect best audio format for this browser
+function getAudioMimeType() {
+  const types = ['audio/webm;codecs=opus', 'audio/webm', 'audio/mp4', 'audio/ogg;codecs=opus', 'audio/wav'];
+  for (const t of types) {
+    if (typeof MediaRecorder !== 'undefined' && MediaRecorder.isTypeSupported(t)) return t;
+  }
+  return '';
+}
+const audioMimeType = getAudioMimeType();
+const audioExtension = audioMimeType.includes('webm') ? 'webm' : audioMimeType.includes('mp4') ? 'm4a' : audioMimeType.includes('ogg') ? 'ogg' : 'wav';
 
 // --- API ---
 async function api(path, opts = {}) {
@@ -233,17 +259,28 @@ async function api(path, opts = {}) {
 }
 
 // --- Init ---
-if (token && participant?.consent_at) { show('screen-convs'); loadConvs(); }
+(async function init() {
+  if (token && participant) {
+    try {
+      // Verify token is still valid
+      participant = await api('/api/v1/me');
+      localStorage.setItem('p', JSON.stringify(participant));
+      enterApp();
+    } catch (e) {
+      // Token expired or invalid — clear and show login
+      localStorage.clear(); token = null; participant = null;
+    }
+  }
+})();
 
 function show(id) { document.querySelectorAll('.screen').forEach(s => s.classList.remove('active')); document.getElementById(id).classList.add('active'); }
 
-// --- Auth ---
-function goStep2() {
-  invCode = document.getElementById('invite-code').value.trim().toUpperCase();
-  if (invCode.length < 4) return alert('Enter a valid invite code.');
-  document.getElementById('step1').style.display = 'none';
-  document.getElementById('step2').style.display = 'block';
+function saveAuth() {
+  localStorage.setItem('t', token);
+  localStorage.setItem('p', JSON.stringify(participant));
 }
+
+// --- Auth ---
 async function doRegister() {
   const name = document.getElementById('r-name').value.trim();
   if (!name) { document.getElementById('r-error').textContent = 'Please enter your name.'; return; }
@@ -251,38 +288,81 @@ async function doRegister() {
     const d = await api('/api/v1/auth/register', { method: 'POST', body: JSON.stringify({
       invite_code: invCode, name,
       phone_number: document.getElementById('r-phone').value.trim(),
+      venture_name: '', venture_description: '', industry_vertical: '',
+    })});
+    token = d.access_token; participant = d.participant;
+    saveAuth();
+    participant = await api('/api/v1/me/consent', { method: 'POST', body: JSON.stringify({ study_consent: true }) });
+    saveAuth();
+    // Show survey step for first-time users
+    document.getElementById('step-account').style.display = 'none';
+    document.getElementById('step-survey').style.display = 'block';
+  } catch (e) { document.getElementById('r-error').textContent = e.message; }
+}
+
+async function doSurvey() {
+  try {
+    participant = await api('/api/v1/me', { method: 'PATCH', body: JSON.stringify({
       venture_name: document.getElementById('r-venture').value.trim(),
       venture_description: document.getElementById('r-desc').value.trim(),
       industry_vertical: document.getElementById('r-industry').value,
     })});
-    token = d.access_token; participant = d.participant;
-    sessionStorage.setItem('t', token);
-    participant = await api('/api/v1/me/consent', { method: 'POST', body: JSON.stringify({ study_consent: true }) });
-    sessionStorage.setItem('p', JSON.stringify(participant));
-    show('screen-convs'); loadConvs();
-  } catch (e) { document.getElementById('r-error').textContent = e.message; }
+    saveAuth();
+    enterApp();
+  } catch (e) {
+    // If PATCH fails (fields not allowed), just enter app — survey data is nice-to-have
+    console.warn('Survey save failed:', e.message);
+    enterApp();
+  }
 }
-function doLogout() { sessionStorage.clear(); token = null; participant = null; location.reload(); }
 
-// --- Conversations ---
-async function loadConvs() {
+function doLogout() { localStorage.clear(); token = null; participant = null; location.reload(); }
+
+// --- Enter App (auto-open latest or new conversation) ---
+async function enterApp() {
+  show('screen-chat');
+  document.getElementById('messages').innerHTML = '<div class="thinking">Loading...</div>';
   try {
     const d = await api('/api/v1/conversations');
-    const el = document.getElementById('conv-list');
-    if (!d.conversations.length) { el.innerHTML = '<div class="empty-state"><h2>No conversations yet</h2><p>Tap + to start a conversation with your mentor.</p></div>'; return; }
+    if (d.conversations.length) {
+      const c = d.conversations[0]; // most recent
+      openConv(c.id, c.title || 'Conversation', c.week_number || 1);
+    } else {
+      await newConv();
+    }
+  } catch (e) {
+    document.getElementById('messages').innerHTML = `<div class="thinking">${e.message}</div>`;
+  }
+}
+
+// --- Drawer ---
+function openDrawer() {
+  loadDrawerConvs();
+  document.getElementById('drawer-overlay').classList.add('open');
+}
+function closeDrawer() {
+  document.getElementById('drawer-overlay').classList.remove('open');
+}
+async function loadDrawerConvs() {
+  try {
+    const d = await api('/api/v1/conversations');
+    const el = document.getElementById('drawer-convs');
+    if (!d.conversations.length) { el.innerHTML = '<div style="padding:20px;text-align:center;color:var(--text-light);font-size:14px;">No conversations yet</div>'; return; }
     el.innerHTML = d.conversations.map(c => {
       const title = c.title || 'New conversation';
-      const preview = c.last_message ? c.last_message.content.substring(0, 70) : '';
       const time = new Date(c.last_message?.created_at || c.created_at).toLocaleDateString();
-      return `<div class="conv-card" onclick="openConv('${c.id}','${(c.title||'Conversation').replace(/'/g,"\\'")}',${c.week_number||1})">
-        <div class="conv-title">${title}</div>
-        <div class="conv-meta"><span class="conv-week">Week ${c.week_number||'?'}</span><span class="conv-time">${time}</span></div>
-        ${preview ? `<div class="conv-preview">${preview}...</div>` : ''}
+      const active = c.id === convId ? ' active' : '';
+      return `<div class="drawer-conv${active}" onclick="openConv('${c.id}','${(title).replace(/'/g,"\\'")}',${c.week_number||1}); closeDrawer();">
+        <div class="drawer-conv-title">${title}</div>
+        <div class="drawer-conv-meta">Week ${c.week_number||'?'} · ${time}</div>
       </div>`;
     }).join('');
   } catch (e) { console.error(e); }
 }
+
+// --- Conversations ---
 async function newConv() {
+  closeDrawer();
   try {
     const d = await api('/api/v1/conversations', { method: 'POST' });
     openConv(d.conversation.id, d.conversation.title || 'New conversation', d.conversation.week_number || 1);
@@ -300,9 +380,8 @@ function openConv(id, title, week) {
   api(`/api/v1/conversations/${id}`).then(d => renderMsgs(d.messages)).catch(e => {
     document.getElementById('messages').innerHTML = `<div class="thinking">${e.message}</div>`;
   });
-  switchToVoice();
+  setInputState(STATES.VOICE_IDLE);
 }
-function goHome() { show('screen-convs'); loadConvs(); }
 
 function renderMsgs(msgs) {
   const el = document.getElementById('messages');
@@ -320,50 +399,93 @@ function appendMsg(role, text) {
   el.scrollTop = el.scrollHeight;
 }
 
-// --- Voice Recording ---
-function switchToVoice() {
-  document.getElementById('input-voice').style.display = 'flex';
-  document.getElementById('input-text').style.display = 'none';
+// --- Input State Machine ---
+const STATES = { VOICE_IDLE: 'voice_idle', RECORDING: 'recording', TRANSCRIBING: 'transcribing', TEXT_PREVIEW: 'text_preview', TEXT_TYPING: 'text_typing' };
+let inputState = STATES.VOICE_IDLE;
+
+function setInputState(state) {
+  inputState = state;
+  const els = {
+    voice: document.getElementById('input-voice'),
+    text: document.getElementById('input-text'),
+    preview: document.getElementById('voice-preview'),
+    transcribing: document.getElementById('transcribing'),
+    voiceLabel: document.getElementById('voice-label'),
+    voiceBtn: document.getElementById('voice-btn'),
+    toggleLink: document.querySelector('.voice-toggle-link'),
+  };
+  // Hide everything first
+  els.voice.style.display = 'none';
+  els.text.style.display = 'none';
+  els.preview.style.display = 'none';
+  els.transcribing.style.display = 'none';
+  els.voiceBtn.classList.remove('recording');
+  els.voiceLabel.classList.remove('voice-duration');
+
+  switch (state) {
+    case STATES.VOICE_IDLE:
+      els.voice.style.display = 'flex';
+      els.voiceLabel.textContent = 'Tap to speak';
+      break;
+    case STATES.RECORDING:
+      els.voice.style.display = 'flex';
+      els.voiceBtn.classList.add('recording');
+      els.voiceLabel.classList.add('voice-duration');
+      els.voiceLabel.textContent = '0:00';
+      break;
+    case STATES.TRANSCRIBING:
+      els.transcribing.style.display = 'flex';
+      break;
+    case STATES.TEXT_PREVIEW:
+      els.preview.style.display = 'flex';
+      els.text.style.display = 'flex';
+      if (els.toggleLink) els.toggleLink.style.display = 'none';
+      document.getElementById('chat-input').focus();
+      break;
+    case STATES.TEXT_TYPING:
+      els.text.style.display = 'flex';
+      if (els.toggleLink) els.toggleLink.style.display = '';
+      document.getElementById('chat-input').focus();
+      break;
+  }
 }
-function switchToText() {
-  document.getElementById('input-voice').style.display = 'none';
-  document.getElementById('input-text').style.display = 'flex';
-  document.getElementById('input-text').style.position = 'relative';
-  document.getElementById('chat-input').focus();
-}
+
+function switchToVoice() { setInputState(STATES.VOICE_IDLE); }
+function switchToText() { setInputState(STATES.TEXT_TYPING); }
 function clearVoice() {
-  document.getElementById('voice-preview').style.display = 'none';
+  lastInputMethod = 'text';
   document.getElementById('chat-input').value = '';
-  switchToVoice();
+  setInputState(STATES.VOICE_IDLE);
 }
 
 async function toggleRecord() {
+  if (!voiceSupported) {
+    alert('Voice input requires a secure connection (HTTPS). Please use text input instead.');
+    setInputState(STATES.TEXT_TYPING);
+    return;
+  }
   if (isRecording) { stopRecord(); return; }
   try {
     const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-    mediaRec = new MediaRecorder(stream);
+    const recorderOpts = audioMimeType ? { mimeType: audioMimeType } : {};
+    mediaRec = new MediaRecorder(stream, recorderOpts);
     audioChunks = [];
     mediaRec.ondataavailable = e => audioChunks.push(e.data);
     mediaRec.onstop = () => {
       stream.getTracks().forEach(t => t.stop());
-      const blob = new Blob(audioChunks, { type: 'audio/webm' });
+      const blob = new Blob(audioChunks, { type: audioMimeType || 'audio/webm' });
       transcribe(blob);
     };
     mediaRec.start();
     isRecording = true;
     recSecs = 0;
-    document.getElementById('voice-btn').classList.add('recording');
-    document.getElementById('voice-label').classList.add('voice-duration');
-    updateTimer();
+    setInputState(STATES.RECORDING);
     recTimer = setInterval(updateTimer, 1000);
   } catch (e) { alert('Microphone access needed for voice input.'); }
 }
 function stopRecord() {
   if (mediaRec && isRecording) { mediaRec.stop(); isRecording = false; }
   clearInterval(recTimer);
-  document.getElementById('voice-btn').classList.remove('recording');
-  document.getElementById('voice-label').className = 'voice-label';
-  document.getElementById('voice-label').textContent = 'Tap to speak';
 }
 function updateTimer() {
   recSecs++;
@@ -372,22 +494,27 @@ function updateTimer() {
 }
 
 async function transcribe(blob) {
-  document.getElementById('input-voice').style.display = 'none';
-  document.getElementById('transcribing').style.display = 'flex';
+  setInputState(STATES.TRANSCRIBING);
   try {
     const form = new FormData();
-    form.append('audio', blob, 'recording.webm');
+    form.append('audio', blob, `recording.${audioExtension}`);
     form.append('conversation_id', convId || '');
     const h = {}; if (token) h['Authorization'] = `Bearer ${token}`;
     const r = await fetch(`${API}/api/v1/voice/transcribe`, { method: 'POST', headers: h, body: form });
+    if (!r.ok) {
+      const err = await r.json().catch(() => ({}));
+      throw new Error(err.detail || `Server error ${r.status}`);
+    }
     const d = await r.json();
     if (d.transcript) {
+      lastInputMethod = 'voice';
       document.getElementById('chat-input').value = d.transcript;
-      document.getElementById('voice-preview').style.display = 'flex';
-      switchToText();
-    } else { switchToVoice(); }
-  } catch (e) { alert('Transcription failed: ' + e.message); switchToVoice(); }
-  document.getElementById('transcribing').style.display = 'none';
+      setInputState(STATES.TEXT_PREVIEW);
+    } else {
+      alert('No speech detected. Please try again.');
+      setInputState(STATES.VOICE_IDLE);
+    }
+  } catch (e) { alert('Transcription failed: ' + e.message); setInputState(STATES.VOICE_IDLE); }
 }
 
 // --- Send ---
@@ -396,7 +523,8 @@ async function sendText() {
   const text = input.value.trim();
   if (!text || !convId) return;
   input.value = '';
-  document.getElementById('voice-preview').style.display = 'none';
+  const methodForThisMsg = lastInputMethod;
+  lastInputMethod = 'text';
 
   appendMsg('user', text);
   const el = document.getElementById('messages');
@@ -406,7 +534,7 @@ async function sendText() {
 
   try {
     const d = await api(`/api/v1/conversations/${convId}/messages`, {
-      method: 'POST', body: JSON.stringify({ content: text, input_method: 'text', client_id: crypto.randomUUID() }),
+      method: 'POST', body: JSON.stringify({ content: text, input_method: methodForThisMsg, client_id: crypto.randomUUID() }),
     });
     document.getElementById('think')?.remove();
     appendMsg('assistant', d.assistant_message.content);
@@ -421,7 +549,7 @@ async function sendText() {
     if (t) t.textContent = 'Error: ' + e.message;
   }
   document.getElementById('send-btn').disabled = false;
-  switchToVoice();
+  setInputState(STATES.VOICE_IDLE);
 }
 </script>
 </body>

@@ -99,7 +99,7 @@ async def update_profile(
     participant: Participant = Depends(get_current_participant),
     db: AsyncSession = Depends(get_db),
 ):
-    allowed_fields = {"venture_description", "fcm_token", "app_version"}
+    allowed_fields = {"venture_name", "venture_description", "industry_vertical", "fcm_token", "app_version"}
     for field, value in updates.items():
         if field in allowed_fields:
             setattr(participant, field, value)
