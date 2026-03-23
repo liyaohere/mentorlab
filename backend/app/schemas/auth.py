@@ -19,6 +19,16 @@ class LoginRequest(BaseModel):
     password: str
 
 
+class RequestCodeRequest(BaseModel):
+    phone_number: str
+
+
+class VerifyCodeRequest(BaseModel):
+    phone_number: str
+    code: str
+    new_password: str = ""
+
+
 class ConsentRequest(BaseModel):
     study_consent: bool
     audio_consent: bool = False

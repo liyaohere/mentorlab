@@ -12,7 +12,7 @@ from app.models.participant import InviteCode, Participant, ParticipantStatus
 import hashlib
 import secrets
 
-from app.schemas.auth import AuthResponse, ConsentRequest, LoginRequest, ParticipantResponse, RegisterRequest
+from app.schemas.auth import AuthResponse, ConsentRequest, LoginRequest, ParticipantResponse, RegisterRequest, RequestCodeRequest, VerifyCodeRequest
 
 
 def hash_password(password: str) -> str:
@@ -107,6 +107,54 @@ async def login(request: LoginRequest, db: AsyncSession = Depends(get_db)):
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="No account found with this phone number")
     if not participant.password_hash or not verify_password(request.password, participant.password_hash):
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Incorrect password")
+    token = create_access_token(participant)
+    return AuthResponse(
+        participant_id=participant.id,
+        access_token=token,
+        participant=ParticipantResponse.model_validate(participant),
+    )
+
+
+@router.post("/request-code")
+async def request_code(request: RequestCodeRequest, db: AsyncSession = Depends(get_db)):
+    """Send a verification code to the user's phone (for password reset or passwordless login)."""
+    import random
+    result = await db.execute(
+        select(Participant).where(Participant.phone_number == request.phone_number)
+    )
+    participant = result.scalar_one_or_none()
+    if participant is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="No account found with this phone number")
+    code = f"{random.randint(0, 999999):06d}"
+    participant.otp_code = code
+    participant.otp_expires = datetime.now(timezone.utc) + timedelta(minutes=10)
+    await db.commit()
+    # TODO: Send code via SMS (Twilio/Africa's Talking) in production
+    # For development, return the code in the response
+    return {"message": f"Verification code sent to {request.phone_number}", "dev_code": code}
+
+
+@router.post("/verify-code", response_model=AuthResponse)
+async def verify_code(request: VerifyCodeRequest, db: AsyncSession = Depends(get_db)):
+    """Verify OTP code and log in (optionally set new password)."""
+    result = await db.execute(
+        select(Participant).where(Participant.phone_number == request.phone_number)
+    )
+    participant = result.scalar_one_or_none()
+    if participant is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="No account found")
+    if not participant.otp_code or participant.otp_code != request.code:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid code")
+    if participant.otp_expires and participant.otp_expires < datetime.now(timezone.utc):
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Code expired")
+    # Clear OTP
+    participant.otp_code = None
+    participant.otp_expires = None
+    # Update password if provided
+    if request.new_password:
+        participant.password_hash = hash_password(request.new_password)
+    await db.commit()
+    await db.refresh(participant)
     token = create_access_token(participant)
     return AuthResponse(
         participant_id=participant.id,
