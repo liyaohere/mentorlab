@@ -64,6 +64,17 @@ if grep -rq "OPENAI_API_KEY\s*=\s*sk-" "$BACKEND" --include="*.py" 2>/dev/null; 
   ERRORS=$((ERRORS + 1))
 fi
 
+# --- Admin API lints ---
+
+# 8. Export endpoints must accept admin_key query param (for <a> tag downloads)
+if grep -rq "require_admin" "$BACKEND/middleware/admin_auth.py" 2>/dev/null; then
+  if ! grep -q "query_params" "$BACKEND/middleware/admin_auth.py" 2>/dev/null; then
+    echo "FAIL: admin_auth.py must accept admin_key as query param for download links."
+    echo "  FIX: Add request.query_params.get('admin_key') fallback in require_admin()."
+    ERRORS=$((ERRORS + 1))
+  fi
+fi
+
 # --- Docs lints ---
 
 # 7. Design decisions must have required fields

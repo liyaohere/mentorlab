@@ -52,6 +52,15 @@ After UI changes, the agent can validate its own work:
 **Validation checklist for UI changes:**
 - Screenshot the page at 390x844 (iPhone SE size)
 - Check `console.error` output via evaluate_script
+- Test state transitions (voice idle → recording → transcribing → text preview)
+
+## Admin panel validation
+After admin/backend changes, run these checks:
+```bash
+./scripts/lint-structure.sh          # Structural lints (frontend + backend + docs)
+./scripts/test-admin-api.sh          # Admin API smoke tests (all endpoints)
+./scripts/test-admin-api.sh https://mentorlab-api-production.up.railway.app mentorlab2026  # Production
+```
 - Verify key elements are visible (voice button, messages, header)
 - Test state transitions (voice idle → recording → transcribing → text preview)
 

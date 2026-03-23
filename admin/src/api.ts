@@ -96,11 +96,13 @@ export const triggerConversations = (cohortId: string) =>
 // Export (download URLs need the key as query param since <a> tags can't set headers)
 export const exportTranscriptsUrl = (cohort?: string) => {
   const params = new URLSearchParams();
+  if (adminKey) params.set('admin_key', adminKey);
   if (cohort) params.set('cohort_id', cohort);
   return `${API_URL}/api/v1/admin/export/transcripts?${params}`;
 };
 export const exportSurveysUrl = (cohort?: string) => {
   const params = new URLSearchParams();
+  if (adminKey) params.set('admin_key', adminKey);
   if (cohort) params.set('cohort_id', cohort);
   return `${API_URL}/api/v1/admin/export/surveys?${params}`;
 };
