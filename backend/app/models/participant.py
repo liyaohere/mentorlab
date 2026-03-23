@@ -57,6 +57,7 @@ class Participant(Base):
     consent_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     audio_consent: Mapped[bool] = mapped_column(Boolean, default=False)
     audio_consent_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    password_hash: Mapped[str | None] = mapped_column(String(128))
     memory_notes: Mapped[str | None] = mapped_column(Text)
     language_preference: Mapped[str | None] = mapped_column(String(20), default="english")
     app_version: Mapped[str | None] = mapped_column(String(20))

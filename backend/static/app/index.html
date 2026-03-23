@@ -49,6 +49,9 @@ body { font-family: 'Inter', -apple-system, sans-serif; background: var(--bg); c
 .btn-primary:hover { background: #2E7D32; transform: translateY(-1px); }
 .btn-primary:disabled { opacity: 0.4; transform: none; }
 .error-msg { color: #D32F2F; font-size: 14px; margin-bottom: 12px; }
+.phone-row { display: flex; gap: 8px; margin-bottom: 16px; }
+.phone-row select { width: 130px; flex-shrink: 0; padding: 14px 8px; font-size: 15px; }
+.phone-row input { flex: 1; margin-bottom: 0; }
 .step-info { font-size: 13px; color: var(--text-light); margin-bottom: 20px; }
 
 /* ===== DRAWER ===== */
@@ -175,17 +178,41 @@ body { font-family: 'Inter', -apple-system, sans-serif; background: var(--bg); c
   <div class="logo">MentorLab</div>
   <div class="tagline">Your AI business mentor</div>
   <div class="form-box">
-    <!-- Step 1: Create account (minimal) -->
-    <div id="step-account">
-      <p class="step-info">Create your account to get started</p>
+    <!-- Login (default) -->
+    <div id="step-login">
+      <p class="step-info">Log in to continue</p>
+      <p class="field-label">Phone Number</p>
+      <div class="phone-row">
+        <select id="l-code"><option value="+256">&#127482;&#127468; +256</option><option value="+1">&#127482;&#127480; +1</option><option value="+254">&#127472;&#127466; +254</option><option value="+255">&#127481;&#127487; +255</option><option value="+211">&#127480;&#127480; +211</option><option value="+243">&#127464;&#127465; +243</option><option value="+250">&#127479;&#127484; +250</option><option value="+44">&#127468;&#127463; +44</option><option value="+91">&#127470;&#127475; +91</option><option value="+86">&#127464;&#127475; +86</option></select>
+        <input id="l-phone" placeholder="7XX XXX XXX" type="tel">
+      </div>
+      <p class="field-label">Password</p>
+      <input id="l-pass" placeholder="Your password" type="password">
+      <div id="l-error" class="error-msg"></div>
+      <button class="btn-primary" onclick="doLogin()">Log in</button>
+      <p style="text-align:center;margin-top:16px;font-size:14px;color:var(--text-secondary);">
+        New here? <a href="#" onclick="showRegister(); return false;" style="color:var(--green);font-weight:600;text-decoration:none;">Create account</a>
+      </p>
+    </div>
+    <!-- Register -->
+    <div id="step-register" style="display:none">
+      <p class="step-info">Create your account</p>
       <p class="field-label">Your Name</p>
       <input id="r-name" placeholder="Full name">
       <p class="field-label">Phone Number</p>
-      <input id="r-phone" placeholder="+256..." type="tel">
+      <div class="phone-row">
+        <select id="r-code"><option value="+256">&#127482;&#127468; +256</option><option value="+1">&#127482;&#127480; +1</option><option value="+254">&#127472;&#127466; +254</option><option value="+255">&#127481;&#127487; +255</option><option value="+211">&#127480;&#127480; +211</option><option value="+243">&#127464;&#127465; +243</option><option value="+250">&#127479;&#127484; +250</option><option value="+44">&#127468;&#127463; +44</option><option value="+91">&#127470;&#127475; +91</option><option value="+86">&#127464;&#127475; +86</option></select>
+        <input id="r-phone" placeholder="7XX XXX XXX" type="tel">
+      </div>
+      <p class="field-label">Create a Password</p>
+      <input id="r-pass" placeholder="Choose a password" type="password">
       <div id="r-error" class="error-msg"></div>
       <button class="btn-primary" onclick="doRegister()">Continue</button>
+      <p style="text-align:center;margin-top:16px;font-size:14px;color:var(--text-secondary);">
+        Already have an account? <a href="#" onclick="showLogin(); return false;" style="color:var(--green);font-weight:600;text-decoration:none;">Log in</a>
+      </p>
     </div>
-    <!-- Step 2: Onboarding survey (only once) -->
+    <!-- Onboarding survey (first time only) -->
     <div id="step-survey" style="display:none">
       <p class="step-info">Tell us about your business</p>
       <p class="field-label">Venture Name</p>
@@ -284,7 +311,7 @@ body { font-family: 'Inter', -apple-system, sans-serif; background: var(--bg); c
 const API = window.location.origin;
 let token = localStorage.getItem('t');
 let participant = JSON.parse(localStorage.getItem('p') || 'null');
-let convId = null, invCode = 'HDBU38JZ';
+let convId = null, invCode = '4V9SV6K7';
 let mediaRec = null, audioChunks = [], isRecording = false, recTimer = null, recSecs = 0;
 let lastInputMethod = 'text';
 const voiceSupported = !!(navigator.mediaDevices && navigator.mediaDevices.getUserMedia);
@@ -332,13 +359,46 @@ function saveAuth() {
 }
 
 // --- Auth ---
+function showLogin() {
+  document.getElementById('step-login').style.display = 'block';
+  document.getElementById('step-register').style.display = 'none';
+  document.getElementById('step-survey').style.display = 'none';
+  document.getElementById('l-error').textContent = '';
+}
+function showRegister() {
+  document.getElementById('step-login').style.display = 'none';
+  document.getElementById('step-register').style.display = 'block';
+  document.getElementById('step-survey').style.display = 'none';
+  document.getElementById('r-error').textContent = '';
+}
+
+async function doLogin() {
+  const code = document.getElementById('l-code').value;
+  const num = document.getElementById('l-phone').value.trim().replace(/\s/g, '');
+  const phone = code + num;
+  const pass = document.getElementById('l-pass').value;
+  if (!num) { document.getElementById('l-error').textContent = 'Please enter your phone number.'; return; }
+  if (!pass) { document.getElementById('l-error').textContent = 'Please enter your password.'; return; }
+  try {
+    const d = await api('/api/v1/auth/login', { method: 'POST', body: JSON.stringify({ phone_number: phone, password: pass }) });
+    token = d.access_token; participant = d.participant;
+    saveAuth();
+    enterApp();
+  } catch (e) { document.getElementById('l-error').textContent = e.message; }
+}
+
 async function doRegister() {
   const name = document.getElementById('r-name').value.trim();
+  const code = document.getElementById('r-code').value;
+  const num = document.getElementById('r-phone').value.trim().replace(/\s/g, '');
+  const phone = code + num;
+  const pass = document.getElementById('r-pass').value;
   if (!name) { document.getElementById('r-error').textContent = 'Please enter your name.'; return; }
+  if (!num) { document.getElementById('r-error').textContent = 'Please enter your phone number.'; return; }
+  if (!pass || pass.length < 4) { document.getElementById('r-error').textContent = 'Password must be at least 4 characters.'; return; }
   try {
     const d = await api('/api/v1/auth/register', { method: 'POST', body: JSON.stringify({
-      invite_code: invCode, name,
-      phone_number: document.getElementById('r-phone').value.trim(),
+      invite_code: invCode, name, phone_number: phone, password: pass,
       venture_name: '', venture_description: '', industry_vertical: '',
     })});
     token = d.access_token; participant = d.participant;
@@ -346,7 +406,7 @@ async function doRegister() {
     participant = await api('/api/v1/me/consent', { method: 'POST', body: JSON.stringify({ study_consent: true }) });
     saveAuth();
     // Show survey step for first-time users
-    document.getElementById('step-account').style.display = 'none';
+    document.getElementById('step-register').style.display = 'none';
     document.getElementById('step-survey').style.display = 'block';
   } catch (e) { document.getElementById('r-error').textContent = e.message; }
 }

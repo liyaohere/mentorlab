@@ -8,9 +8,15 @@ class RegisterRequest(BaseModel):
     invite_code: str
     name: str
     phone_number: str = ""
+    password: str = ""
     venture_name: str = ""
     venture_description: str = ""
     industry_vertical: str = ""
+
+
+class LoginRequest(BaseModel):
+    phone_number: str
+    password: str
 
 
 class ConsentRequest(BaseModel):

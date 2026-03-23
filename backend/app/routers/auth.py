@@ -9,7 +9,24 @@ from app.config import settings
 from app.database import get_db
 from app.middleware.auth import get_current_participant
 from app.models.participant import InviteCode, Participant, ParticipantStatus
-from app.schemas.auth import AuthResponse, ConsentRequest, ParticipantResponse, RegisterRequest
+import hashlib
+import secrets
+
+from app.schemas.auth import AuthResponse, ConsentRequest, LoginRequest, ParticipantResponse, RegisterRequest
+
+
+def hash_password(password: str) -> str:
+    salt = secrets.token_hex(16)
+    h = hashlib.pbkdf2_hmac("sha256", password.encode(), salt.encode(), 100_000)
+    return f"{salt}${h.hex()}"
+
+
+def verify_password(password: str, stored: str) -> bool:
+    if "$" not in stored:
+        return False
+    salt, h = stored.split("$", 1)
+    check = hashlib.pbkdf2_hmac("sha256", password.encode(), salt.encode(), 100_000)
+    return secrets.compare_digest(check.hex(), h)
 
 router = APIRouter(prefix="/api/v1/auth", tags=["auth"])
 
@@ -55,6 +72,7 @@ async def register(request: RegisterRequest, db: AsyncSession = Depends(get_db))
         arm=invite.arm,
         name=request.name,
         phone_number=request.phone_number,
+        password_hash=hash_password(request.password) if request.password else None,
         venture_name=request.venture_name,
         venture_description=request.venture_description,
         industry_vertical=request.industry_vertical,
@@ -70,6 +88,25 @@ async def register(request: RegisterRequest, db: AsyncSession = Depends(get_db))
     await db.commit()
     await db.refresh(participant)
 
+    token = create_access_token(participant)
+    return AuthResponse(
+        participant_id=participant.id,
+        access_token=token,
+        participant=ParticipantResponse.model_validate(participant),
+    )
+
+
+@router.post("/login", response_model=AuthResponse)
+async def login(request: LoginRequest, db: AsyncSession = Depends(get_db)):
+    """Log in with phone number + password."""
+    result = await db.execute(
+        select(Participant).where(Participant.phone_number == request.phone_number)
+    )
+    participant = result.scalar_one_or_none()
+    if participant is None:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="No account found with this phone number")
+    if not participant.password_hash or not verify_password(request.password, participant.password_hash):
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Incorrect password")
     token = create_access_token(participant)
     return AuthResponse(
         participant_id=participant.id,
