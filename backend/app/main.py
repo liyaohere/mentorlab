@@ -102,5 +102,8 @@ if (STATIC_DIR / "admin").exists():
 if (STATIC_DIR / "app").exists():
     @app.get("/")
     async def app_index():
-        return FileResponse(STATIC_DIR / "app" / "index.html")
+        return FileResponse(
+            STATIC_DIR / "app" / "index.html",
+            headers={"Cache-Control": "no-cache, no-store, must-revalidate"},
+        )
     app.mount("/app", StaticFiles(directory=STATIC_DIR / "app", html=True), name="webapp")
