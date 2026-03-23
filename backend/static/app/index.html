@@ -236,6 +236,12 @@ body { font-family: 'Inter', -apple-system, sans-serif; background: var(--bg); c
       </div>
       <p class="field-label">Create a Password</p>
       <input id="r-pass" placeholder="Choose a password" type="password">
+      <p style="margin-top:4px;margin-bottom:16px;">
+        <a href="#" onclick="document.getElementById('r-invite-row').style.display=document.getElementById('r-invite-row').style.display==='none'?'block':'none'; return false;" style="font-size:12px;color:var(--text-light);text-decoration:none;">I have an invite code</a>
+      </p>
+      <div id="r-invite-row" style="display:none;margin-bottom:16px;">
+        <input id="r-invite" placeholder="Invite code (optional)" style="text-transform:uppercase;letter-spacing:2px;text-align:center;">
+      </div>
       <div id="r-error" class="error-msg"></div>
       <button class="btn-primary" onclick="doRegister()">Continue</button>
       <p style="text-align:center;margin-top:16px;font-size:14px;color:var(--text-secondary);">
@@ -453,7 +459,7 @@ async function doRegister() {
   if (!pass || pass.length < 4) { document.getElementById('r-error').textContent = 'Password must be at least 4 characters.'; return; }
   try {
     const d = await api('/api/v1/auth/register', { method: 'POST', body: JSON.stringify({
-      invite_code: invCode, name, phone_number: phone, password: pass,
+      invite_code: (document.getElementById('r-invite')?.value?.trim() || invCode), name, phone_number: phone, password: pass,
       venture_name: '', venture_description: '', industry_vertical: '',
     })});
     token = d.access_token; participant = d.participant;
