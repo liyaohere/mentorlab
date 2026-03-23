@@ -44,26 +44,36 @@ def create_access_token(participant: Participant) -> str:
 
 @router.post("/register", response_model=AuthResponse)
 async def register(request: RegisterRequest, db: AsyncSession = Depends(get_db)):
-    # Look up invite code
-    result = await db.execute(
-        select(InviteCode).where(InviteCode.code == request.invite_code.upper())
-    )
-    invite = result.scalar_one_or_none()
-    if invite is None:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Invalid invite code")
-
-    # If code already used, return existing participant with new token (phone loss recovery)
-    if invite.used:
+    # Check if phone number already registered
+    if request.phone_number:
         result = await db.execute(
-            select(Participant).where(Participant.invite_code == invite.code)
+            select(Participant).where(Participant.phone_number == request.phone_number)
         )
         existing = result.scalar_one_or_none()
         if existing:
-            token = create_access_token(existing)
-            return AuthResponse(
-                participant_id=existing.id,
-                access_token=token,
-                participant=ParticipantResponse.model_validate(existing),
+            raise HTTPException(
+                status_code=status.HTTP_409_CONFLICT,
+                detail="An account with this phone number already exists. Please log in instead.",
+            )
+
+    # Look up invite code — if empty or already used, auto-assign an available one
+    invite = None
+    if request.invite_code:
+        result = await db.execute(
+            select(InviteCode).where(InviteCode.code == request.invite_code.upper())
+        )
+        invite = result.scalar_one_or_none()
+
+    if invite is None or invite.used:
+        # Auto-assign an unused invite code
+        result = await db.execute(
+            select(InviteCode).where(InviteCode.used == False).limit(1)
+        )
+        invite = result.scalar_one_or_none()
+        if invite is None:
+            raise HTTPException(
+                status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+                detail="No invite codes available. Please contact the research team.",
             )
 
     # Create new participant
