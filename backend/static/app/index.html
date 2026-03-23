@@ -183,7 +183,7 @@ body { font-family: 'Inter', -apple-system, sans-serif; background: var(--bg); c
       <p class="step-info">Log in to continue</p>
       <p class="field-label">Phone Number</p>
       <div class="phone-row">
-        <select id="l-code"><option value="+256">&#127482;&#127468; +256</option><option value="+1">&#127482;&#127480; +1</option><option value="+254">&#127472;&#127466; +254</option><option value="+255">&#127481;&#127487; +255</option><option value="+211">&#127480;&#127480; +211</option><option value="+243">&#127464;&#127465; +243</option><option value="+250">&#127479;&#127484; +250</option><option value="+44">&#127468;&#127463; +44</option><option value="+91">&#127470;&#127475; +91</option><option value="+86">&#127464;&#127475; +86</option></select>
+        <select id="l-code" class="country-code-select"></select>
         <input id="l-phone" placeholder="7XX XXX XXX" type="tel">
       </div>
       <p class="field-label">Password</p>
@@ -202,7 +202,7 @@ body { font-family: 'Inter', -apple-system, sans-serif; background: var(--bg); c
       <p class="step-info">Enter your phone number to receive a verification code</p>
       <p class="field-label">Phone Number</p>
       <div class="phone-row">
-        <select id="f-code"><option value="+256">&#127482;&#127468; +256</option><option value="+1">&#127482;&#127480; +1</option><option value="+254">&#127472;&#127466; +254</option><option value="+255">&#127481;&#127487; +255</option><option value="+211">&#127480;&#127480; +211</option><option value="+243">&#127464;&#127465; +243</option><option value="+250">&#127479;&#127484; +250</option><option value="+44">&#127468;&#127463; +44</option><option value="+91">&#127470;&#127475; +91</option><option value="+86">&#127464;&#127475; +86</option></select>
+        <select id="f-code" class="country-code-select"></select>
         <input id="f-phone" placeholder="7XX XXX XXX" type="tel">
       </div>
       <div id="f-error" class="error-msg"></div>
@@ -231,7 +231,7 @@ body { font-family: 'Inter', -apple-system, sans-serif; background: var(--bg); c
       <input id="r-name" placeholder="Full name">
       <p class="field-label">Phone Number</p>
       <div class="phone-row">
-        <select id="r-code"><option value="+256">&#127482;&#127468; +256</option><option value="+1">&#127482;&#127480; +1</option><option value="+254">&#127472;&#127466; +254</option><option value="+255">&#127481;&#127487; +255</option><option value="+211">&#127480;&#127480; +211</option><option value="+243">&#127464;&#127465; +243</option><option value="+250">&#127479;&#127484; +250</option><option value="+44">&#127468;&#127463; +44</option><option value="+91">&#127470;&#127475; +91</option><option value="+86">&#127464;&#127475; +86</option></select>
+        <select id="r-code" class="country-code-select"></select>
         <input id="r-phone" placeholder="7XX XXX XXX" type="tel">
       </div>
       <p class="field-label">Create a Password</p>
@@ -256,7 +256,7 @@ body { font-family: 'Inter', -apple-system, sans-serif; background: var(--bg); c
       <p class="field-label">About your venture</p>
       <textarea id="r-desc" placeholder="What does your business do?"></textarea>
       <p class="field-label">Industry</p>
-      <select id="r-industry"><option value="">Select...</option><option>Agriculture</option><option>Retail</option><option>Services</option><option>Food & Beverage</option><option>Technology</option><option>Manufacturing</option><option>Other</option></select>
+      <select id="r-industry" class="industry-select"></select>
       <div id="s-error" class="error-msg"></div>
       <button class="btn-primary" onclick="doSurvey()">Start chatting</button>
     </div>
@@ -329,7 +329,7 @@ body { font-family: 'Inter', -apple-system, sans-serif; background: var(--bg); c
     <div class="profile-field"><label>Venture Name</label><input id="p-venture"></div>
     <div class="profile-field"><label>About your venture</label><textarea id="p-desc"></textarea></div>
     <div class="profile-field"><label>Industry</label>
-      <select id="p-industry"><option value="">Select...</option><option>Agriculture</option><option>Retail</option><option>Services</option><option>Food & Beverage</option><option>Technology</option><option>Manufacturing</option><option>Other</option></select>
+      <select id="p-industry" class="industry-select"></select>
     </div>
   </div>
   <div class="profile-section">
@@ -351,6 +351,35 @@ let convId = null, invCode = '4V9SV6K7';
 let mediaRec = null, audioChunks = [], isRecording = false, recTimer = null, recSecs = 0;
 let lastInputMethod = 'text';
 const voiceSupported = !!(navigator.mediaDevices && navigator.mediaDevices.getUserMedia);
+
+// --- Reusable Helpers ---
+
+// Country code options (rendered once, reused by all phone inputs)
+const COUNTRY_CODES = [
+  ['+256','🇺🇬'],['+1','🇺🇸'],['+254','🇰🇪'],['+255','🇹🇿'],['+211','🇸🇸'],
+  ['+243','🇨🇩'],['+250','🇷🇼'],['+44','🇬🇧'],['+91','🇮🇳'],['+86','🇨🇳'],
+];
+const INDUSTRY_OPTIONS = ['Agriculture','Retail','Services','Food & Beverage','Technology','Manufacturing','Other'];
+
+function renderCountryOptions() {
+  return COUNTRY_CODES.map(([code, flag]) => `<option value="${code}">${flag} ${code}</option>`).join('');
+}
+function renderIndustryOptions() {
+  return '<option value="">Select...</option>' + INDUSTRY_OPTIONS.map(i => `<option>${i}</option>`).join('');
+}
+
+// Inject options into all selects on load
+document.addEventListener('DOMContentLoaded', () => {
+  document.querySelectorAll('.country-code-select').forEach(el => { el.innerHTML = renderCountryOptions(); });
+  document.querySelectorAll('.industry-select').forEach(el => { el.innerHTML = renderIndustryOptions(); });
+});
+
+// Get full phone number from a code select + number input pair
+function getPhone(codeId, phoneId) {
+  const code = document.getElementById(codeId).value;
+  const num = document.getElementById(phoneId).value.trim().replace(/\s/g, '');
+  return { code, num, full: code + num };
+}
 
 // Detect best audio format for this browser
 function getAudioMimeType() {
@@ -408,10 +437,9 @@ function showVerify() { hideAllSteps(); document.getElementById('step-verify').s
 let forgotPhone = ''; // store phone across forgot→verify steps
 
 async function doRequestCode() {
-  const code = document.getElementById('f-code').value;
-  const num = document.getElementById('f-phone').value.trim().replace(/\s/g, '');
+  const { num, full } = getPhone('f-code', 'f-phone');
   if (!num) { document.getElementById('f-error').textContent = 'Please enter your phone number.'; return; }
-  forgotPhone = code + num;
+  forgotPhone = full;
   try {
     const d = await api('/api/v1/auth/request-code', { method: 'POST', body: JSON.stringify({ phone_number: forgotPhone }) });
     // In dev, show the code; in production, SMS would be sent
@@ -434,9 +462,7 @@ async function doVerifyCode() {
 }
 
 async function doLogin() {
-  const code = document.getElementById('l-code').value;
-  const num = document.getElementById('l-phone').value.trim().replace(/\s/g, '');
-  const phone = code + num;
+  const { num, full: phone } = getPhone('l-code', 'l-phone');
   const pass = document.getElementById('l-pass').value;
   if (!num) { document.getElementById('l-error').textContent = 'Please enter your phone number.'; return; }
   if (!pass) { document.getElementById('l-error').textContent = 'Please enter your password.'; return; }
@@ -450,9 +476,7 @@ async function doLogin() {
 
 async function doRegister() {
   const name = document.getElementById('r-name').value.trim();
-  const code = document.getElementById('r-code').value;
-  const num = document.getElementById('r-phone').value.trim().replace(/\s/g, '');
-  const phone = code + num;
+  const { num, full: phone } = getPhone('r-code', 'r-phone');
   const pass = document.getElementById('r-pass').value;
   if (!name) { document.getElementById('r-error').textContent = 'Please enter your name.'; return; }
   if (!num) { document.getElementById('r-error').textContent = 'Please enter your phone number.'; return; }
