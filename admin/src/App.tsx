@@ -50,9 +50,9 @@ function LoginPage() {
   };
 
   return (
-    <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '100vh', background: '#f5f5f5' }}>
-      <div style={{ background: 'white', borderRadius: 16, padding: 40, width: 380, boxShadow: '0 4px 24px rgba(0,0,0,0.08)' }}>
-        <h1 style={{ color: '#1B5E20', fontSize: 28, marginBottom: 4 }}>MentorLab</h1>
+    <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '100vh', background: '#FAFAF8' }}>
+      <div style={{ background: 'white', borderRadius: 20, padding: 40, width: 400, boxShadow: '0 4px 24px rgba(0,0,0,0.06)', border: '1px solid #e8e8e8' }}>
+        <h1 style={{ color: '#1B5E20', fontSize: 32, marginBottom: 4, fontFamily: "'Newsreader', serif" }}>MentorLab</h1>
         <p style={{ color: '#757575', marginBottom: 32 }}>Admin Dashboard</p>
         <form onSubmit={handleLogin}>
           <div className="form-group">
@@ -81,7 +81,7 @@ export default function App() {
   }
 
   return (
-    <BrowserRouter>
+    <BrowserRouter basename="/admin">
       <Nav />
       <main className="main">
         <Routes>

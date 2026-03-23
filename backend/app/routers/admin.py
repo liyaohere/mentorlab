@@ -366,6 +366,63 @@ async def get_dashboard(
     )
     total_ai_messages = total_msg_result.scalar() or 0
 
+    # Total user messages
+    total_user_result = await db.execute(
+        select(func.count(Message.id)).where(Message.role == "user")
+    )
+    total_user_messages = total_user_result.scalar() or 0
+
+    # Total conversations
+    conv_count_result = await db.execute(select(func.count(Conversation.id)))
+    total_conversations = conv_count_result.scalar() or 0
+
+    # Avg messages per conversation
+    avg_msgs = round(total_user_messages / max(total_conversations, 1), 1)
+
+    # Messages today
+    from datetime import datetime, timedelta, timezone as tz
+    today_start = datetime.now(tz.utc).replace(hour=0, minute=0, second=0, microsecond=0)
+    msgs_today_result = await db.execute(
+        select(func.count(Message.id)).where(Message.role == "user", Message.created_at >= today_start)
+    )
+    messages_today = msgs_today_result.scalar() or 0
+
+    # Messages this week
+    week_start = today_start - timedelta(days=today_start.weekday())
+    msgs_week_result = await db.execute(
+        select(func.count(Message.id)).where(Message.role == "user", Message.created_at >= week_start)
+    )
+    messages_this_week = msgs_week_result.scalar() or 0
+
+    # Recent conversations (last 10)
+    recent_result = await db.execute(
+        select(
+            Conversation.id, Conversation.title, Conversation.created_at, Conversation.week_number,
+            Participant.name, Participant.arm,
+        )
+        .join(Participant, Conversation.participant_id == Participant.id)
+        .order_by(Conversation.created_at.desc())
+        .limit(10)
+    )
+    recent_conversations = [
+        {"id": str(r[0]), "title": r[1] or "New conversation", "created_at": r[2].isoformat(), "week": r[3], "participant": r[4], "arm": r[5].value}
+        for r in recent_result.all()
+    ]
+
+    # Conversations per arm
+    conv_by_arm_result = await db.execute(
+        select(Participant.arm, func.count(Conversation.id))
+        .join(Conversation, Conversation.participant_id == Participant.id)
+        .group_by(Participant.arm)
+    )
+    conversations_by_arm = {r[0].value: r[1] for r in conv_by_arm_result.all()}
+
+    # Participants with memory (cross-conversation memory active)
+    memory_result = await db.execute(
+        select(func.count(Participant.id)).where(Participant.memory_notes.isnot(None))
+    )
+    participants_with_memory = memory_result.scalar() or 0
+
     return {
         "total_participants": total,
         "by_arm": by_arm,
@@ -373,6 +430,14 @@ async def get_dashboard(
         "user_messages_by_arm": messages_by_arm,
         "input_methods": input_methods,
         "total_ai_messages": total_ai_messages,
+        "total_user_messages": total_user_messages,
+        "total_conversations": total_conversations,
+        "avg_messages_per_conversation": avg_msgs,
+        "messages_today": messages_today,
+        "messages_this_week": messages_this_week,
+        "conversations_by_arm": conversations_by_arm,
+        "participants_with_memory": participants_with_memory,
+        "recent_conversations": recent_conversations,
         "estimated_ai_cost_usd": round(total_ai_messages * 0.01, 2),
     }
 
