@@ -141,6 +141,25 @@ body { font-family: 'Inter', -apple-system, sans-serif; background: var(--bg); c
 .voice-preview { display: flex; align-items: center; gap: 10px; padding: 12px 16px; background: var(--green-subtle); border-radius: 12px; margin-bottom: 10px; font-size: 13px; color: var(--green); border: 1px solid rgba(76,175,80,0.2); }
 .voice-preview .clear { color: #C62828; font-weight: 600; cursor: pointer; margin-left: auto; background: none; border: none; font-family: 'Inter', sans-serif; font-size: 13px; }
 
+/* ===== PROFILE ===== */
+.profile-header { padding: 16px 20px; display: flex; align-items: center; gap: 14px; border-bottom: 1px solid var(--border); background: var(--surface); }
+.profile-back { background: none; border: none; font-size: 22px; cursor: pointer; color: var(--text); padding: 4px; }
+.profile-body { flex: 1; overflow-y: auto; padding: 24px 20px; }
+.profile-section { margin-bottom: 28px; }
+.profile-section h3 { font-size: 13px; font-weight: 600; color: var(--text-light); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 12px; }
+.profile-field { margin-bottom: 14px; }
+.profile-field label { display: block; font-size: 13px; font-weight: 500; color: var(--text-secondary); margin-bottom: 4px; }
+.profile-field input, .profile-field select, .profile-field textarea {
+  width: 100%; padding: 12px 14px; border: 1.5px solid var(--border); border-radius: 12px;
+  font-size: 16px; font-family: 'Inter', sans-serif; color: var(--text); background: var(--bg); outline: none;
+}
+.profile-field textarea { height: 80px; resize: none; }
+.profile-field input:focus, .profile-field select:focus, .profile-field textarea:focus { border-color: var(--green-light); }
+.profile-save { width: 100%; padding: 14px; background: var(--green); color: white; border: none; border-radius: 14px; font-size: 16px; font-weight: 600; font-family: 'Inter', sans-serif; cursor: pointer; margin-top: 8px; }
+.profile-save:hover { background: #2E7D32; }
+.profile-save:disabled { opacity: 0.4; }
+.profile-saved { text-align: center; color: var(--green); font-size: 14px; font-weight: 500; margin-top: 8px; }
+
 /* Responsive */
 @media (max-width: 500px) {
   .msg-content { font-size: 16px; }
@@ -191,6 +210,7 @@ body { font-family: 'Inter', -apple-system, sans-serif; background: var(--bg); c
     </div>
     <div class="drawer-convs" id="drawer-convs"></div>
     <div class="drawer-footer">
+      <button class="logout-btn" onclick="openProfile()" style="margin-bottom:8px;">Profile & Settings</button>
       <button class="logout-btn" onclick="doLogout()">Log out</button>
     </div>
   </div>
@@ -226,6 +246,37 @@ body { font-family: 'Inter', -apple-system, sans-serif; background: var(--bg); c
     <button class="text-send" id="send-btn" onclick="sendText()">↑</button>
     <button class="mode-switch voice-toggle-link" onclick="switchToVoice()">use voice</button>
   </div>
+</div>
+</div>
+
+<!-- ===== PROFILE ===== -->
+<div id="screen-profile" class="screen">
+<div class="profile-header">
+  <button class="profile-back" onclick="closeProfile()">←</button>
+  <h2>Profile</h2>
+</div>
+<div class="profile-body">
+  <div class="profile-section">
+    <h3>Personal Info</h3>
+    <div class="profile-field"><label>Name</label><input id="p-name"></div>
+    <div class="profile-field"><label>Phone Number</label><input id="p-phone" type="tel"></div>
+  </div>
+  <div class="profile-section">
+    <h3>Business</h3>
+    <div class="profile-field"><label>Venture Name</label><input id="p-venture"></div>
+    <div class="profile-field"><label>About your venture</label><textarea id="p-desc"></textarea></div>
+    <div class="profile-field"><label>Industry</label>
+      <select id="p-industry"><option value="">Select...</option><option>Agriculture</option><option>Retail</option><option>Services</option><option>Food & Beverage</option><option>Technology</option><option>Manufacturing</option><option>Other</option></select>
+    </div>
+  </div>
+  <div class="profile-section">
+    <h3>Preferences</h3>
+    <div class="profile-field"><label>Language</label>
+      <select id="p-language"><option value="english">English</option><option value="luganda">Luganda</option><option value="acholi">Acholi</option></select>
+    </div>
+  </div>
+  <button class="profile-save" id="profile-save-btn" onclick="saveProfile()">Save changes</button>
+  <div id="profile-saved" class="profile-saved" style="display:none">Saved!</div>
 </div>
 </div>
 
@@ -550,6 +601,43 @@ async function sendText() {
   }
   document.getElementById('send-btn').disabled = false;
   setInputState(STATES.VOICE_IDLE);
+}
+
+// --- Profile ---
+function openProfile() {
+  closeDrawer();
+  // Populate fields from participant data
+  document.getElementById('p-name').value = participant?.name || '';
+  document.getElementById('p-phone').value = participant?.phone_number || '';
+  document.getElementById('p-venture').value = participant?.venture_name || '';
+  document.getElementById('p-desc').value = participant?.venture_description || '';
+  document.getElementById('p-industry').value = participant?.industry_vertical || '';
+  document.getElementById('p-language').value = participant?.language_preference || 'english';
+  document.getElementById('profile-saved').style.display = 'none';
+  show('screen-profile');
+}
+function closeProfile() {
+  show('screen-chat');
+}
+async function saveProfile() {
+  const btn = document.getElementById('profile-save-btn');
+  btn.disabled = true;
+  btn.textContent = 'Saving...';
+  try {
+    participant = await api('/api/v1/me', { method: 'PATCH', body: JSON.stringify({
+      name: document.getElementById('p-name').value.trim(),
+      phone_number: document.getElementById('p-phone').value.trim(),
+      venture_name: document.getElementById('p-venture').value.trim(),
+      venture_description: document.getElementById('p-desc').value.trim(),
+      industry_vertical: document.getElementById('p-industry').value,
+      language_preference: document.getElementById('p-language').value,
+    })});
+    saveAuth();
+    document.getElementById('profile-saved').style.display = 'block';
+    setTimeout(() => { document.getElementById('profile-saved').style.display = 'none'; }, 2000);
+  } catch (e) { alert('Failed to save: ' + e.message); }
+  btn.disabled = false;
+  btn.textContent = 'Save changes';
 }
 </script>
 </body>

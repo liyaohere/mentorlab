@@ -46,12 +46,23 @@ class ClaudeService:
         return self._prompt_cache[path]
 
     def _build_participant_context(self, participant: Participant, conversation: Conversation) -> str:
-        return f"""## About This Entrepreneur
+        ctx = f"""## About This Entrepreneur
 - Name: {participant.name}
 - Venture: {participant.venture_name or 'Not specified'}
 - Description: {participant.venture_description or 'Not specified'}
 - Industry: {participant.industry_vertical or 'Not specified'}
+- Preferred language: {participant.language_preference or 'english'}
 - Week: {conversation.week_number or 1} of the program"""
+
+        if participant.memory_notes:
+            ctx += f"""
+
+## What You Know From Previous Conversations
+The following are key facts, preferences, and context you have learned about this entrepreneur from past conversations. Use this to personalize your responses and show continuity.
+
+{participant.memory_notes}"""
+
+        return ctx
 
     def _assemble_system_prompt(
         self,
@@ -183,6 +194,55 @@ class ClaudeService:
         system_prompt = self._assemble_system_prompt(participant, conversation)
         formatted = self._format_messages(messages)
         return await self._call_ai(system_prompt, formatted)
+
+    async def summarize_conversation(
+        self,
+        participant: Participant,
+        conversation: Conversation,
+        messages: list[Message],
+    ) -> tuple[str, str]:
+        """Generate a conversation summary and updated memory notes.
+
+        Returns (summary, updated_memory_notes).
+        """
+        formatted = self._format_messages(messages)
+        if not formatted:
+            return "", participant.memory_notes or ""
+
+        existing_memory = participant.memory_notes or "No prior memory."
+
+        prompt = f"""You are reviewing a mentoring conversation with {participant.name} who runs "{participant.venture_name or 'a business'}".
+
+## Existing Memory Notes
+{existing_memory}
+
+## Task
+Based on the conversation below, produce TWO outputs:
+
+1. **SUMMARY**: A 2-3 sentence summary of what was discussed in this conversation.
+2. **UPDATED MEMORY**: An updated version of the memory notes incorporating new facts, preferences, goals, challenges, and decisions from this conversation. Keep it concise (max 300 words). Organize by topic. Remove duplicates. Keep only what's useful for future conversations.
+
+Format your response exactly as:
+SUMMARY: <summary text>
+
+MEMORY: <updated memory text>"""
+
+        text, _ = await self._call_ai(
+            prompt,
+            formatted + [{"role": "user", "content": "Please generate the summary and updated memory now."}],
+        )
+
+        # Parse the response
+        summary = ""
+        memory = existing_memory
+        if "SUMMARY:" in text and "MEMORY:" in text:
+            parts = text.split("MEMORY:", 1)
+            summary = parts[0].replace("SUMMARY:", "").strip()
+            memory = parts[1].strip()
+        elif "SUMMARY:" in text:
+            summary = text.replace("SUMMARY:", "").strip()
+
+        return summary, memory
 
     async def get_greeting(
         self,

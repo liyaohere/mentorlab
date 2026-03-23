@@ -2,7 +2,7 @@ import enum
 import uuid
 from datetime import datetime, timezone
 
-from sqlalchemy import DateTime, Enum, ForeignKey, Index, Integer, String
+from sqlalchemy import DateTime, Enum, ForeignKey, Index, Integer, String, Text
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
@@ -26,6 +26,7 @@ class Conversation(Base):
     week_number: Mapped[int | None] = mapped_column(Integer)
     initiated_by: Mapped[InitiatorType] = mapped_column(Enum(InitiatorType), nullable=False)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
+    summary: Mapped[str | None] = mapped_column(Text)
     ended_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
 
     participant: Mapped["Participant"] = relationship(back_populates="conversations", lazy="selectin")

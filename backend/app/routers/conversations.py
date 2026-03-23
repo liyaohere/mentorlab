@@ -1,7 +1,10 @@
+import logging
 import uuid
 from datetime import datetime, timezone
 
 from fastapi import APIRouter, Depends, HTTPException, status
+
+logger = logging.getLogger(__name__)
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
@@ -73,6 +76,27 @@ async def create_conversation(
 ):
     week_number = _compute_week_number(participant)
 
+    # Summarize unsummarized past conversations and update participant memory
+    result = await db.execute(
+        select(Conversation)
+        .where(Conversation.participant_id == participant.id, Conversation.summary.is_(None))
+        .options(selectinload(Conversation.messages))
+        .order_by(Conversation.created_at)
+    )
+    unsummarized = result.scalars().all()
+    for conv in unsummarized:
+        if len(conv.messages) >= 2:  # Only summarize conversations with actual exchanges
+            try:
+                summary, updated_memory = await claude_service.summarize_conversation(
+                    participant, conv, conv.messages,
+                )
+                conv.summary = summary
+                participant.memory_notes = updated_memory
+            except Exception as e:
+                logger.warning(f"Failed to summarize conversation {conv.id}: {e}")
+    if unsummarized:
+        await db.flush()
+
     conversation = Conversation(
         participant_id=participant.id,
         week_number=week_number,
@@ -81,7 +105,7 @@ async def create_conversation(
     db.add(conversation)
     await db.flush()
 
-    # Generate AI greeting
+    # Generate AI greeting (now includes memory from past conversations)
     greeting_text, token_usage = await claude_service.get_greeting(participant, conversation)
 
     greeting_msg = Message(

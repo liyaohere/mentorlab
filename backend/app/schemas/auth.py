@@ -21,10 +21,12 @@ class ConsentRequest(BaseModel):
 class ParticipantResponse(BaseModel):
     id: uuid.UUID
     name: str
+    phone_number: str | None
     arm: str
     venture_name: str | None
     venture_description: str | None
     industry_vertical: str | None
+    language_preference: str | None
     status: str
     cohort_id: str | None
     consent_at: datetime | None
