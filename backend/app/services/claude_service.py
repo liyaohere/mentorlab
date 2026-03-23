@@ -195,6 +195,81 @@ The following are key facts, preferences, and context you have learned about thi
         formatted = self._format_messages(messages)
         return await self._call_ai(system_prompt, formatted)
 
+    async def stream_response(
+        self,
+        participant: Participant,
+        conversation: Conversation,
+        messages: list[Message],
+    ):
+        """Stream response tokens. Yields (chunk_text, None) for each chunk,
+        then (full_text, usage_dict) as the final yield."""
+        system_prompt = self._assemble_system_prompt(participant, conversation)
+        formatted = self._format_messages(messages)
+        full_text = ""
+        usage = {"input_tokens": 0, "output_tokens": 0}
+        try:
+            use_openai = settings.AI_PROVIDER == "openai" or (
+                not settings.ANTHROPIC_API_KEY and settings.OPENAI_API_KEY
+            )
+            if use_openai:
+                async for chunk, u in self._stream_openai(system_prompt, formatted):
+                    if u is not None:
+                        full_text = chunk
+                        usage = u
+                    else:
+                        full_text += chunk
+                        yield chunk, None
+            else:
+                async for chunk, u in self._stream_anthropic(system_prompt, formatted):
+                    if u is not None:
+                        full_text = chunk
+                        usage = u
+                    else:
+                        full_text += chunk
+                        yield chunk, None
+        except Exception as e:
+            import traceback
+            logger.error(f"Streaming error: {e}\n{traceback.format_exc()}")
+            if not full_text:
+                full_text = "Sorry, I encountered an error. Please try again."
+                yield full_text, None
+        yield full_text, usage
+
+    async def _stream_anthropic(self, system_prompt: str, messages: list[dict]):
+        import anthropic
+        client = anthropic.AsyncAnthropic(api_key=settings.ANTHROPIC_API_KEY)
+        full = ""
+        async with client.messages.stream(
+            model=settings.CLAUDE_MODEL, max_tokens=settings.CLAUDE_MAX_TOKENS,
+            system=system_prompt, messages=messages,
+        ) as stream:
+            async for text in stream.text_stream:
+                full += text
+                yield text, None
+            resp = await stream.get_final_message()
+            yield full, {"input_tokens": resp.usage.input_tokens, "output_tokens": resp.usage.output_tokens}
+
+    async def _stream_openai(self, system_prompt: str, messages: list[dict]):
+        openai_messages = [{"role": "system", "content": system_prompt}] + messages
+        full = ""
+        async with httpx.AsyncClient(timeout=60.0) as client:
+            async with client.stream(
+                "POST", "https://api.openai.com/v1/chat/completions",
+                headers={"Authorization": f"Bearer {settings.OPENAI_API_KEY}"},
+                json={"model": settings.OPENAI_CHAT_MODEL, "messages": openai_messages, "max_tokens": settings.CLAUDE_MAX_TOKENS, "stream": True},
+            ) as response:
+                response.raise_for_status()
+                async for line in response.aiter_lines():
+                    if not line.startswith("data: ") or line == "data: [DONE]":
+                        continue
+                    import json
+                    chunk = json.loads(line[6:])
+                    delta = chunk.get("choices", [{}])[0].get("delta", {}).get("content", "")
+                    if delta:
+                        full += delta
+                        yield delta, None
+                yield full, {"input_tokens": 0, "output_tokens": 0}
+
     async def summarize_conversation(
         self,
         participant: Participant,

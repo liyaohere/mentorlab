@@ -88,6 +88,7 @@ body { font-family: 'Inter', -apple-system, sans-serif; background: var(--bg); c
 .msg-row.assistant .msg-content { background: var(--assistant-bg); color: var(--text); border-bottom-left-radius: 6px; font-family: 'Newsreader', serif; font-size: 18px; }
 .msg-timestamp { font-size: 11px; color: var(--text-light); margin-top: 4px; padding: 0 4px; }
 .thinking { color: var(--text-secondary); font-size: 15px; padding: 14px 18px; font-style: italic; }
+.arm-banner { text-align: center; padding: 6px; font-size: 11px; font-weight: 600; color: #C62828; background: #FFEBEE; border-bottom: 1px solid #FFCDD2; letter-spacing: 0.3px; }
 
 /* ===== CHAT INPUT — VOICE FIRST ===== */
 .input-area { padding: 16px 20px 28px; background: var(--surface); border-top: 1px solid var(--border); }
@@ -288,6 +289,7 @@ body { font-family: 'Inter', -apple-system, sans-serif; background: var(--bg); c
     <span class="week-tag" id="chat-week"></span>
   </div>
 </div>
+<div id="arm-banner" class="arm-banner" style="display:none"></div>
 <div class="messages" id="messages"></div>
 <div class="input-area">
   <div id="voice-preview" class="voice-preview" style="display:none">
@@ -373,6 +375,9 @@ document.addEventListener('DOMContentLoaded', () => {
   document.querySelectorAll('.country-code-select').forEach(el => { el.innerHTML = renderCountryOptions(); });
   document.querySelectorAll('.industry-select').forEach(el => { el.innerHTML = renderIndustryOptions(); });
 });
+
+// Arm display names for internal testing banner
+const ARM_LABELS = { control: 'Control Arm', analytic: 'Info Optimization Arm', constructive: 'Reframing Arm' };
 
 // Get full phone number from a code select + number input pair
 function getPhone(codeId, phoneId) {
@@ -517,6 +522,12 @@ function doLogout() { localStorage.clear(); token = null; participant = null; lo
 // --- Enter App (auto-open latest or new conversation) ---
 async function enterApp() {
   show('screen-chat');
+  // Show internal testing arm banner
+  const banner = document.getElementById('arm-banner');
+  if (participant?.arm && ARM_LABELS[participant.arm]) {
+    banner.textContent = `[Internal Testing] ${ARM_LABELS[participant.arm]}`;
+    banner.style.display = 'block';
+  }
   document.getElementById('messages').innerHTML = '<div class="thinking">Loading...</div>';
   try {
     const d = await api('/api/v1/conversations');
@@ -713,7 +724,7 @@ async function transcribe(blob) {
   } catch (e) { alert('Transcription failed: ' + e.message); setInputState(STATES.VOICE_IDLE); }
 }
 
-// --- Send ---
+// --- Send (streaming) ---
 async function sendText() {
   const input = document.getElementById('chat-input');
   const text = input.value.trim();
@@ -723,27 +734,57 @@ async function sendText() {
   lastInputMethod = 'text';
 
   appendMsg('user', text);
-  const el = document.getElementById('messages');
-  el.innerHTML += '<div class="thinking" id="think">Thinking...</div>';
-  el.scrollTop = el.scrollHeight;
+  const msgsEl = document.getElementById('messages');
   document.getElementById('send-btn').disabled = true;
 
+  // Create empty assistant bubble for streaming
+  const t = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  const row = document.createElement('div');
+  row.className = 'msg-row assistant';
+  row.innerHTML = `<div class="msg-content" id="stream-bubble"></div><div class="msg-timestamp">${t}</div>`;
+  msgsEl.appendChild(row);
+  const bubble = document.getElementById('stream-bubble');
+  bubble.textContent = '...';
+  msgsEl.scrollTop = msgsEl.scrollHeight;
+
   try {
-    const d = await api(`/api/v1/conversations/${convId}/messages`, {
-      method: 'POST', body: JSON.stringify({ content: text, input_method: methodForThisMsg, client_id: crypto.randomUUID() }),
+    const h = { 'Content-Type': 'application/json' };
+    if (token) h['Authorization'] = `Bearer ${token}`;
+    const r = await fetch(`${API}/api/v1/conversations/${convId}/messages/stream`, {
+      method: 'POST', headers: h,
+      body: JSON.stringify({ content: text, input_method: methodForThisMsg, client_id: crypto.randomUUID() }),
     });
-    document.getElementById('think')?.remove();
-    appendMsg('assistant', d.assistant_message.content);
-    // Update title in header if it was generated
-    if (d.assistant_message) {
-      api(`/api/v1/conversations/${convId}`).then(conv => {
-        if (conv.conversation.title) document.getElementById('chat-title').textContent = conv.conversation.title;
-      }).catch(() => {});
+    if (!r.ok) { const e = await r.json().catch(() => ({})); throw new Error(e.detail || 'Error'); }
+
+    const reader = r.body.getReader();
+    const decoder = new TextDecoder();
+    let started = false;
+    let buf = '';
+
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      buf += decoder.decode(value, { stream: true });
+      // Parse SSE lines
+      const lines = buf.split('\n');
+      buf = lines.pop(); // keep incomplete line
+      for (const line of lines) {
+        if (!line.startsWith('data: ')) continue;
+        const d = JSON.parse(line.slice(6));
+        if (d.t) {
+          if (!started) { bubble.textContent = ''; started = true; }
+          bubble.textContent += d.t;
+          msgsEl.scrollTop = msgsEl.scrollHeight;
+        }
+        if (d.done && d.title) {
+          document.getElementById('chat-title').textContent = d.title;
+        }
+      }
     }
   } catch (e) {
-    const t = document.getElementById('think');
-    if (t) t.textContent = 'Error: ' + e.message;
+    bubble.textContent = 'Error: ' + e.message;
   }
+  bubble.removeAttribute('id');
   document.getElementById('send-btn').disabled = false;
   setInputState(STATES.VOICE_IDLE);
 }
