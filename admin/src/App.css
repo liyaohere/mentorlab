@@ -55,10 +55,10 @@ tr:hover td { background: #fafafa; }
 /* Dashboard enhancements */
 .nav-brand { font-family: 'Newsreader', serif; }
 .stat-value { font-family: 'Newsreader', serif; }
-.stat-card-accent { border-left: 4px solid #1B5E20; }
-.stat-card-secondary { border-left: 4px solid #4CAF50; }
-.stat-card-warn { border-left: 4px solid #E65100; }
-.stat-card-info { border-left: 4px solid #1565C0; }
+.stat-card-accent { }
+.stat-card-secondary { }
+.stat-card-warn { }
+.stat-card-info { }
 .section-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 24px; }
 @media (max-width: 800px) { .section-grid { grid-template-columns: 1fr; } }
 .progress-bar { height: 8px; border-radius: 4px; background: #e8e8e8; overflow: hidden; margin-top: 6px; }
