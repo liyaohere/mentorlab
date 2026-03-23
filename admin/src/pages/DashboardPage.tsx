@@ -47,7 +47,7 @@ export default function DashboardPage() {
         </div>
         <div className="stat-card stat-card-warn">
           <div className="stat-value">${data.estimated_ai_cost_usd}</div>
-          <div className="stat-label">Est. AI Cost</div>
+          <div className="stat-label">Est. Token Cost</div>
         </div>
       </div>
 
