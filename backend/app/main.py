@@ -14,6 +14,7 @@ from app.routers.admin import router as admin_router
 from app.routers.notifications import router as notifications_router
 from app.routers.surveys import router as surveys_router
 from app.routers.voice import router as voice_router
+from app.routers.interview import router as interview_router
 from app.services.scheduler_service import start_scheduler, stop_scheduler
 
 
@@ -52,6 +53,7 @@ app.include_router(voice_router)
 app.include_router(surveys_router)
 app.include_router(notifications_router)
 app.include_router(admin_router)
+app.include_router(interview_router)
 
 
 CURRENT_APP_VERSION = "1.0.0"
@@ -100,6 +102,14 @@ if (STATIC_DIR / "admin").exists():
     app.mount("/admin", StaticFiles(directory=STATIC_DIR / "admin", html=True), name="admin")
 
 if (STATIC_DIR / "app").exists():
+    @app.get("/interview")
+    async def interview_index():
+        """V2 interview platform."""
+        return FileResponse(
+            STATIC_DIR / "app" / "interview.html",
+            headers={"Cache-Control": "no-cache, no-store, must-revalidate"},
+        )
+
     @app.get("/")
     async def app_index():
         return FileResponse(

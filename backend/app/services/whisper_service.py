@@ -34,7 +34,9 @@ class WhisperService:
             "audio/wav": "wav",
             "audio/x-wav": "wav",
         }
-        ext = ext_map.get(audio_file.content_type, "m4a")
+        # Strip codec parameters (e.g., "audio/webm;codecs=opus" -> "audio/webm")
+        base_type = (audio_file.content_type or "").split(";")[0].strip()
+        ext = ext_map.get(base_type, "webm")
         filename = f"audio.{ext}"
 
         try:

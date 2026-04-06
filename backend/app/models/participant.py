@@ -10,9 +10,17 @@ from app.database import Base
 
 
 class ArmType(str, enum.Enum):
+    """Legacy arm types (v1 design). Kept for backwards compatibility."""
     control = "control"
     analytic = "analytic"
     constructive = "constructive"
+
+
+class ConditionType(str, enum.Enum):
+    """V2 experiment conditions."""
+    single = "single"          # C1: Orchestrator + Agent A only
+    integrated = "integrated"  # C2: All 3 agents + integrator → 1 recommendation
+    competing = "competing"    # C3: All 3 agents → 3 competing diagnoses shown
 
 
 class ParticipantStatus(str, enum.Enum):
@@ -45,6 +53,7 @@ class Participant(Base):
     id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     invite_code: Mapped[str] = mapped_column(String(8), unique=True, nullable=False)
     arm: Mapped[ArmType] = mapped_column(Enum(ArmType), nullable=False)
+    condition: Mapped[ConditionType | None] = mapped_column(Enum(ConditionType), nullable=True)
     name: Mapped[str] = mapped_column(String(200), nullable=False)
     phone_number: Mapped[str | None] = mapped_column(String(20))
     venture_name: Mapped[str | None] = mapped_column(String(300))

@@ -76,9 +76,19 @@ async def register(request: RegisterRequest, db: AsyncSession = Depends(get_db))
                 detail="No invite codes available. Please contact the research team.",
             )
 
+    # For DEMO/TEST codes: make them reusable by appending a unique suffix
+    participant_code = invite.code
+    if invite.code.startswith("DEMO") or invite.code.startswith("TEST"):
+        import secrets
+        participant_code = f"{invite.code}_{secrets.token_hex(3)}"
+        # Don't mark demo codes as used — they stay reusable
+    else:
+        # Mark non-demo code as used
+        invite.used = True
+
     # Create new participant
     participant = Participant(
-        invite_code=invite.code,
+        invite_code=participant_code,
         arm=invite.arm,
         name=request.name,
         phone_number=request.phone_number,
@@ -91,9 +101,8 @@ async def register(request: RegisterRequest, db: AsyncSession = Depends(get_db))
     )
     db.add(participant)
 
-    # Mark code as used
-    invite.used = True
-    invite.used_by = participant.id
+    if not invite.code.startswith("DEMO") and not invite.code.startswith("TEST"):
+        invite.used_by = participant.id
 
     await db.commit()
     await db.refresh(participant)

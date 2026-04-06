@@ -16,12 +16,19 @@ class Settings(BaseSettings):
 
     # Anthropic
     ANTHROPIC_API_KEY: str = ""
-    CLAUDE_MODEL: str = "claude-sonnet-4-20250514"
+    CLAUDE_MODEL: str = "claude-opus-4-20250514"
     CLAUDE_MAX_TOKENS: int = 500
 
     # OpenAI (used for Whisper + optionally as AI provider)
     OPENAI_API_KEY: str = ""
-    OPENAI_CHAT_MODEL: str = "gpt-4o-mini"
+    OPENAI_CHAT_MODEL: str = "gpt-4o"
+
+    # V2 Diagnosis Pipeline
+    DIAGNOSIS_MODEL: str = "claude-opus-4-20250514"
+    DIAGNOSIS_MAX_TOKENS: int = 300
+    OPENAI_TTS_MODEL: str = "tts-1-hd"
+    OPENAI_TTS_VOICE: str = "onyx"
+    OPENAI_TTS_SPEED: float = 0.95
 
     # S3-compatible storage
     S3_ENDPOINT_URL: str = ""
