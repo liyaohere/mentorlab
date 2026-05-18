@@ -27,9 +27,9 @@ td { padding: 10px 12px; border-bottom: 1px solid #f0f0f0; }
 tr:hover td { background: #fafafa; }
 
 .badge { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 12px; font-weight: 600; }
-.badge-control { background: #E3F2FD; color: #1565C0; }
-.badge-analytic { background: #FFF3E0; color: #E65100; }
-.badge-constructive { background: #E8F5E9; color: #2E7D32; }
+.badge-c1 { background: #E3F2FD; color: #1565C0; }
+.badge-c2 { background: #FFF3E0; color: #E65100; }
+.badge-c3 { background: #E8F5E9; color: #2E7D32; }
 .badge-active { background: #E8F5E9; color: #2E7D32; }
 .badge-enrolled { background: #FFF3E0; color: #E65100; }
 .badge-dropped { background: #FFEBEE; color: #C62828; }

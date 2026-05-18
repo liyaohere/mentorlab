@@ -117,7 +117,7 @@ async def upload_participants(
         try:
             arm = ArmType(arm_str)
         except ValueError:
-            errors.append(f"Row {i}: invalid arm '{arm_str}' (use control/analytic/constructive)")
+            errors.append(f"Row {i}: invalid arm '{arm_str}' (use c1/c2/c3)")
             continue
 
         code = generate_invite_code()
@@ -445,7 +445,7 @@ async def get_dashboard(
 # --- Prompt Management ---
 
 class PromptUpdate(BaseModel):
-    arm: str  # control, analytic, constructive
+    arm: str  # c1, c2, c3
     content: str
 
 
@@ -454,9 +454,9 @@ async def get_prompt(arm: str):
     """Get the current system prompt for an arm."""
     from pathlib import Path
     arm_files = {
-        "control": "arm1_control.md",
-        "analytic": "arm2_analytic.md",
-        "constructive": "arm3_constructive.md",
+        "c1": "c1_single.md",
+        "c2": "c2_integrated.md",
+        "c3": "c3_competing.md",
     }
     filename = arm_files.get(arm)
     if not filename:
@@ -471,9 +471,9 @@ async def update_prompt(update: PromptUpdate):
     """Update the system prompt for an arm. Logs the change."""
     from pathlib import Path
     arm_files = {
-        "control": "arm1_control.md",
-        "analytic": "arm2_analytic.md",
-        "constructive": "arm3_constructive.md",
+        "c1": "c1_single.md",
+        "c2": "c2_integrated.md",
+        "c3": "c3_competing.md",
     }
     filename = arm_files.get(update.arm)
     if not filename:

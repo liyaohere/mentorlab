@@ -25,11 +25,11 @@ from app.services.claude_service import claude_service
 from app.services.diagnosis_service import DiagnosisService
 from app.services.tts_service import tts_service
 
-# Map legacy arm types to v2 conditions
+# Map arm types to v2 conditions
 ARM_TO_CONDITION = {
-    "control": ConditionType.single,
-    "analytic": ConditionType.integrated,
-    "constructive": ConditionType.competing,
+    "c1": ConditionType.single,
+    "c2": ConditionType.integrated,
+    "c3": ConditionType.competing,
 }
 
 logger = logging.getLogger(__name__)
@@ -80,6 +80,9 @@ class SurveyRequest(BaseModel):
     trust_in_advice: float
     confidence: float
     ownership: float
+    # Manipulation checks
+    perceived_disagreement: float | None = None
+    perceived_breadth: float | None = None
 
 
 # --- Intake Questions ---
@@ -104,7 +107,7 @@ INTAKE_QUESTION_KEYS = [
 ]
 
 NEUTRAL_RESPONSE_PROMPT = (
-    "Based on what you just heard, what do you think is the most important problem "
+    "Based on what you just read, what do you think is the most important problem "
     "facing your business right now? What would you do next, and why?"
 )
 
@@ -236,7 +239,9 @@ async def generate_diagnosis(
         result["shown"] if isinstance(result["shown"], str)
         else "\n---\n".join(result["shown"])
     )
-    conversation.divergence_check = result.get("divergence_check")
+    # Store just PASS/FAIL (column is VARCHAR(10)); full message is in server logs
+    dc = result.get("divergence_check") or ""
+    conversation.divergence_check = "PASS" if dc.startswith("PASS") else "FAIL" if dc else None
     conversation.status = ConversationStatus.diagnosis
 
     await db.commit()
@@ -257,9 +262,11 @@ async def generate_diagnosis(
             response_prompt=NEUTRAL_RESPONSE_PROMPT,
         )
     else:  # competing
+        # Use summarized (shortened) versions for display; raw_diagnoses stored in DB
+        shown = result["shown"] if isinstance(result["shown"], list) else [result["shown"]]
         return DiagnosisResponse(
             type="competing",
-            diagnoses=result["raw_diagnoses"],
+            diagnoses=shown,
             labels=[
                 "One reading of your situation:",
                 "A different reading:",
@@ -315,6 +322,8 @@ async def submit_survey(
     conversation.trust_in_advice_score = request.trust_in_advice
     conversation.confidence_score = request.confidence
     conversation.ownership_score = request.ownership
+    conversation.perceived_disagreement_score = request.perceived_disagreement
+    conversation.perceived_breadth_score = request.perceived_breadth
     conversation.status = ConversationStatus.complete
     conversation.ended_at = datetime.now(timezone.utc)
     await db.commit()
@@ -343,6 +352,8 @@ async def get_transcript(
             "trust_in_advice": conversation.trust_in_advice_score,
             "confidence": conversation.confidence_score,
             "ownership": conversation.ownership_score,
+            "perceived_disagreement": conversation.perceived_disagreement_score,
+            "perceived_breadth": conversation.perceived_breadth_score,
         },
     }
 
@@ -432,6 +443,8 @@ async def get_session_detail(
             "trust_in_advice": c.trust_in_advice_score,
             "confidence": c.confidence_score,
             "ownership": c.ownership_score,
+            "perceived_disagreement": c.perceived_disagreement_score,
+            "perceived_breadth": c.perceived_breadth_score,
         },
         "created_at": c.created_at.isoformat() if c.created_at else None,
         "ended_at": c.ended_at.isoformat() if c.ended_at else None,

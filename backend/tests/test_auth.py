@@ -16,7 +16,7 @@ async def test_register_with_valid_code(client: AsyncClient, seed_invite_codes, 
     data = response.json()
     assert data["access_token"]
     assert data["participant"]["name"] == "John Okello"
-    assert data["participant"]["arm"] == "control"
+    assert data["participant"]["arm"] == "c1"
 
 
 @pytest.mark.asyncio

@@ -496,7 +496,7 @@ function showCompetingDiagnoses(diagnoses, labels) {
   // Header
   const header = document.createElement('div');
   header.className = 'diagnosis-header';
-  header.textContent = 'We asked three advisors to independently analyze your situation. They disagree about what your core problem is.';
+  header.textContent = 'We asked three advisors to independently analyze your situation. They have different thoughts about what your core problem is.';
   msgs.appendChild(header);
 
   // Cards
@@ -509,8 +509,8 @@ function showCompetingDiagnoses(diagnoses, labels) {
   });
 
   const hint = document.createElement('p');
-  hint.style.cssText = 'font-size:13px;color:var(--text-light);margin-top:4px;padding:0 4px';
-  hint.textContent = 'Tap the reading closest to how you see your situation.';
+  hint.style.cssText = 'font-size:14px;font-weight:600;margin-top:12px;padding:0 4px';
+  hint.textContent = 'Which of these sounds most like what is happening in your business? Choose one.';
   msgs.appendChild(hint);
   msgs.scrollTop = msgs.scrollHeight;
 }
@@ -531,11 +531,15 @@ function showSurvey() {
   document.getElementById('chat-input-area').style.display = 'none';
 
   const qs = [
+    // Process measures
     { key: 'cognitive_load', label: 'How mentally demanding was this task?' },
     { key: 'perceived_confusion', label: 'How clear was the advice you received?' },
     { key: 'trust_in_advice', label: 'To what extent did you trust the advice?' },
-    { key: 'confidence', label: 'How confident are you in your assessment?' },
+    { key: 'confidence', label: 'How confident are you in the cause you identified?' },
     { key: 'ownership', label: 'To what extent does this plan feel like YOUR plan?' },
+    // Manipulation checks
+    { key: 'perceived_disagreement', label: 'To what extent did the causes in the advice feel in tension with one another?' },
+    { key: 'perceived_breadth', label: 'To what extent did the advice cover multiple dimensions of your strategic situation?' },
   ];
 
   const surveyDiv = document.createElement('div');

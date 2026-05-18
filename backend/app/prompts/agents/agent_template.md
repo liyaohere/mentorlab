@@ -24,7 +24,7 @@ Develop your assigned cause into a full diagnosis. Your output MUST contain EXAC
 
 - Use simple, accessible language — no business jargon
 - Be specific: reference details the entrepreneur actually shared
-- Total output: 5-7 sentences across all three parts
+- Total output: **150-180 words** across all three parts (CAUSE 2-3 sentences, PREDICTION 1-2 sentences, NEXT STEP 1-2 sentences)
 - Do NOT hedge or qualify excessively — state your diagnosis with conviction
 
 {disagreement_instruction}

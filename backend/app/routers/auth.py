@@ -64,8 +64,19 @@ async def register(request: RegisterRequest, db: AsyncSession = Depends(get_db))
         )
         invite = result.scalar_one_or_none()
 
-    if invite is None or invite.used:
-        # Auto-assign an unused invite code
+    if invite is None:
+        # No matching code found — auto-assign an unused invite code
+        result = await db.execute(
+            select(InviteCode).where(InviteCode.used == False).limit(1)
+        )
+        invite = result.scalar_one_or_none()
+        if invite is None:
+            raise HTTPException(
+                status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+                detail="No invite codes available. Please contact the research team.",
+            )
+    elif invite.used and not (invite.code.startswith("DEMO") or invite.code.startswith("TEST")):
+        # Non-reusable code already used — auto-assign
         result = await db.execute(
             select(InviteCode).where(InviteCode.used == False).limit(1)
         )

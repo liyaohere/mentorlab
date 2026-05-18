@@ -165,6 +165,29 @@ class DiagnosisService:
         )
         return await self._call_ai(system_prompt, user_msg)
 
+    async def run_summarizer(
+        self,
+        diagnosis_a: str,
+        diagnosis_b: str,
+        diagnosis_c: str,
+    ) -> list[str]:
+        """Condense 3 diagnoses while preserving disagreement (Condition 3 only)."""
+        system_prompt = _load_prompt("agents/summarizer.md")
+        user_msg = (
+            f"Diagnosis 1:\n{diagnosis_a}\n\n"
+            f"Diagnosis 2:\n{diagnosis_b}\n\n"
+            f"Diagnosis 3:\n{diagnosis_c}"
+        )
+        response = await self._call_ai(system_prompt, user_msg)
+
+        # Split on "---" separator
+        parts = [p.strip() for p in response.split("---") if p.strip()]
+        if len(parts) == 3:
+            return parts
+        # Fallback: return as single list if separator parsing fails
+        logger.warning(f"Summarizer returned {len(parts)} parts, expected 3. Using raw split.")
+        return parts if parts else [response]
+
     async def generate_diagnosis(
         self,
         participant: Participant,
@@ -242,12 +265,13 @@ class DiagnosisService:
                 "divergence_check": check_result,
             }
         else:
-            # C3: Show all three
+            # C3: Summarize (compress but preserve disagreement)
+            summarized = await self.run_summarizer(diagnosis_a, diagnosis_b, diagnosis_c)
             return {
                 "type": "competing",
                 "orchestrator_causes": causes,
                 "raw_diagnoses": raw_diagnoses,
                 "integrated": None,
-                "shown": raw_diagnoses,
+                "shown": summarized,
                 "divergence_check": check_result,
             }

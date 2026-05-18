@@ -1,7 +1,7 @@
 export interface Participant {
   id: string;
   name: string;
-  arm: 'control' | 'analytic' | 'constructive';
+  arm: 'c1' | 'c2' | 'c3';
   venture_name: string | null;
   venture_description: string | null;
   industry_vertical: string | null;

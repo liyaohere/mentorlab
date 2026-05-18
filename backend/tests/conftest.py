@@ -59,9 +59,9 @@ async def seed_invite_codes():
     """Create test invite codes via the same session pool."""
     async with TestSession() as session:
         codes = [
-            InviteCode(code="TEST001A", arm=ArmType.control, cohort_id="test"),
-            InviteCode(code="TEST002B", arm=ArmType.analytic, cohort_id="test"),
-            InviteCode(code="TEST003C", arm=ArmType.constructive, cohort_id="test"),
+            InviteCode(code="TEST001A", arm=ArmType.c1, cohort_id="test"),
+            InviteCode(code="TEST002B", arm=ArmType.c2, cohort_id="test"),
+            InviteCode(code="TEST003C", arm=ArmType.c3, cohort_id="test"),
         ]
         for code in codes:
             session.add(code)

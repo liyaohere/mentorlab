@@ -27,8 +27,8 @@ Backend API is stable; most iteration happens on the frontend.
 | Completed plans | [docs/exec-plans/completed/](docs/exec-plans/completed/) |
 | Structural lints | [scripts/lint-structure.sh](scripts/lint-structure.sh) |
 
-## ⚠ Design transition note
-The original 3-arm design (control / analytic / constructive) in `MentorLab_Engineering_Prompt_v1.md` is **superseded** by the v2 design (single diagnosis / hidden disagreement / exposed disagreement). See `docs/experiment-design-v2.md` for the current design, including two experiment versions (problem formulation vs. ideation) and all required system changes.
+## Experiment design
+3-arm design: C1 (single diagnosis) / C2 (integrated — resolved disagreement) / C3 (competing — preserved disagreement). Database arm values: `c1`, `c2`, `c3`. Prompt files: `c1_single.md`, `c2_integrated.md`, `c3_competing.md`. See `docs/experiment-design-v2.md` for the full design. Developer handoff: [docs/HANDOFF.md](docs/HANDOFF.md).
 
 ## Architecture (one-paragraph summary)
 Three-layer app: **Frontend** (single HTML, voice-first) → **FastAPI** (auth, conversations, messages, voice transcription) → **PostgreSQL** (participants, conversations, messages). Voice goes through OpenAI Whisper. AI responses via Claude API. See [docs/architecture.md](docs/architecture.md) for full details.

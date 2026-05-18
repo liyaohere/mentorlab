@@ -1,10 +1,15 @@
 import { useEffect, useState } from 'react';
 import { getPrompt, updatePrompt } from '../api';
 
-const ARMS = ['control', 'analytic', 'constructive'];
+const ARMS = ['c1', 'c2', 'c3'];
+const ARM_LABELS: Record<string, string> = {
+  c1: 'C1 Single',
+  c2: 'C2 Integrated',
+  c3: 'C3 Competing',
+};
 
 export default function PromptsPage() {
-  const [selectedArm, setSelectedArm] = useState('control');
+  const [selectedArm, setSelectedArm] = useState('c1');
   const [content, setContent] = useState('');
   const [original, setOriginal] = useState('');
   const [saving, setSaving] = useState(false);
@@ -46,7 +51,7 @@ export default function PromptsPage() {
             className={`btn ${selectedArm === arm ? 'btn-primary' : 'btn-secondary'}`}
             onClick={() => setSelectedArm(arm)}
           >
-            {arm.charAt(0).toUpperCase() + arm.slice(1)}
+            {ARM_LABELS[arm] || arm}
           </button>
         ))}
       </div>

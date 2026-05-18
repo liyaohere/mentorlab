@@ -2,14 +2,14 @@ import { useEffect, useState } from 'react';
 import { getDashboard } from '../api';
 
 const ARM_COLORS: Record<string, string> = {
-  control: '#1565C0',
-  analytic: '#E65100',
-  constructive: '#2E7D32',
+  c1: '#1565C0',
+  c2: '#E65100',
+  c3: '#2E7D32',
 };
 const ARM_LABELS: Record<string, string> = {
-  control: 'Control',
-  analytic: 'Info Optimization',
-  constructive: 'Reframing',
+  c1: 'C1 Single',
+  c2: 'C2 Integrated',
+  c3: 'C3 Competing',
 };
 
 export default function DashboardPage() {
@@ -104,7 +104,7 @@ export default function DashboardPage() {
       <div className="section-grid">
         <div className="card">
           <div className="card-title">Experiment Arms</div>
-          {['control', 'analytic', 'constructive'].map((arm) => {
+          {['c1', 'c2', 'c3'].map((arm) => {
             const participants = data.by_arm?.[arm] || 0;
             const msgs = data.user_messages_by_arm?.[arm] || 0;
             const convs = data.conversations_by_arm?.[arm] || 0;

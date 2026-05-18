@@ -1,0 +1,1720 @@
+{
+  "across_subject": {
+    "sample_sizes": {
+      "single": 30,
+      "integrated": 30,
+      "competing": 30
+    },
+    "ai_output_word_counts": {
+      "single": {
+        "mean": 152.2,
+        "sd": 10.46,
+        "min": 130,
+        "max": 180
+      },
+      "integrated": {
+        "mean": 154.13,
+        "sd": 9.05,
+        "min": 136,
+        "max": 175
+      },
+      "competing": {
+        "mean": 177.57,
+        "sd": 12.68,
+        "min": 155,
+        "max": 206
+      },
+      "kruskal_wallis": {
+        "H": 47.194,
+        "p": "5.65e-11"
+      }
+    },
+    "format_compliance": {
+      "single": {
+        "compliant": 30,
+        "total": 30,
+        "pct": 100.0
+      },
+      "integrated": {
+        "compliant": 30,
+        "total": 30,
+        "pct": 100.0
+      },
+      "competing": {
+        "compliant": 30,
+        "total": 30,
+        "pct": 100.0
+      }
+    },
+    "divergence_check": {
+      "integrated": {
+        "pass": 27,
+        "fail": 3,
+        "null": 0,
+        "total": 30,
+        "pass_rate_pct": 90.0
+      },
+      "competing": {
+        "pass": 28,
+        "fail": 2,
+        "null": 0,
+        "total": 30,
+        "pass_rate_pct": 93.3
+      }
+    },
+    "survey_scores": {
+      "cognitive_load": {
+        "single": {
+          "mean": 2.07,
+          "sd": 0.25,
+          "n": 30
+        },
+        "integrated": {
+          "mean": 2.2,
+          "sd": 0.41,
+          "n": 30
+        },
+        "competing": {
+          "mean": 5.0,
+          "sd": 0.0,
+          "n": 27
+        },
+        "kruskal_wallis": {
+          "H": 73.559,
+          "p": "1.06e-16"
+        }
+      },
+      "perceived_confusion": {
+        "single": {
+          "mean": 1.2,
+          "sd": 0.41,
+          "n": 30
+        },
+        "integrated": {
+          "mean": 1.6,
+          "sd": 0.5,
+          "n": 30
+        },
+        "competing": {
+          "mean": 4.0,
+          "sd": 0.0,
+          "n": 27
+        },
+        "kruskal_wallis": {
+          "H": 66.728,
+          "p": "3.24e-15"
+        }
+      },
+      "trust_in_advice": {
+        "single": {
+          "mean": 5.27,
+          "sd": 0.45,
+          "n": 30
+        },
+        "integrated": {
+          "mean": 5.47,
+          "sd": 0.51,
+          "n": 30
+        },
+        "competing": {
+          "mean": 4.78,
+          "sd": 0.42,
+          "n": 27
+        },
+        "kruskal_wallis": {
+          "H": 23.465,
+          "p": "8.03e-06"
+        }
+      },
+      "confidence": {
+        "single": {
+          "mean": 5.67,
+          "sd": 0.48,
+          "n": 30
+        },
+        "integrated": {
+          "mean": 5.63,
+          "sd": 0.49,
+          "n": 30
+        },
+        "competing": {
+          "mean": 3.81,
+          "sd": 0.48,
+          "n": 27
+        },
+        "kruskal_wallis": {
+          "H": 61.073,
+          "p": "5.47e-14"
+        }
+      },
+      "ownership": {
+        "single": {
+          "mean": 4.37,
+          "sd": 0.93,
+          "n": 30
+        },
+        "integrated": {
+          "mean": 4.27,
+          "sd": 0.78,
+          "n": 30
+        },
+        "competing": {
+          "mean": 2.81,
+          "sd": 0.4,
+          "n": 27
+        },
+        "kruskal_wallis": {
+          "H": 45.219,
+          "p": "1.52e-10"
+        }
+      },
+      "perceived_disagreement": {
+        "single": {
+          "mean": 1.0,
+          "sd": 0.0,
+          "n": 30
+        },
+        "integrated": {
+          "mean": 1.13,
+          "sd": 0.57,
+          "n": 30
+        },
+        "competing": {
+          "mean": 5.41,
+          "sd": 0.5,
+          "n": 27
+        },
+        "kruskal_wallis": {
+          "H": 79.536,
+          "p": "5.36e-18"
+        }
+      },
+      "perceived_breadth": {
+        "single": {
+          "mean": 2.97,
+          "sd": 0.41,
+          "n": 30
+        },
+        "integrated": {
+          "mean": 3.9,
+          "sd": 0.71,
+          "n": 30
+        },
+        "competing": {
+          "mean": 6.15,
+          "sd": 0.36,
+          "n": 27
+        },
+        "kruskal_wallis": {
+          "H": 71.022,
+          "p": "3.78e-16"
+        }
+      }
+    },
+    "response_word_counts": {
+      "single": {
+        "mean": 140.7,
+        "sd": 17.29
+      },
+      "integrated": {
+        "mean": 138.77,
+        "sd": 15.06
+      },
+      "competing": {
+        "mean": 131.8,
+        "sd": 12.8
+      }
+    },
+    "token_usage": {
+      "single": {
+        "mean_input_tokens": 3008,
+        "mean_output_tokens": 737,
+        "mean_wall_seconds": 26.3,
+        "mean_cost_usd": 0.1004,
+        "total_cost_usd": 3.0131
+      },
+      "integrated": {
+        "mean_input_tokens": 6948,
+        "mean_output_tokens": 1508,
+        "mean_wall_seconds": 72.9,
+        "mean_cost_usd": 0.2173,
+        "total_cost_usd": 6.5202
+      },
+      "competing": {
+        "mean_input_tokens": 7316,
+        "mean_output_tokens": 1575,
+        "mean_wall_seconds": 67.2,
+        "mean_cost_usd": 0.2279,
+        "total_cost_usd": 6.8355
+      },
+      "overall": {
+        "total_input_tokens": 518147,
+        "total_output_tokens": 114621,
+        "total_cost_usd": 16.3688,
+        "mean_cost_per_run_usd": 0.1819
+      }
+    },
+    "pipeline_reliability": {
+      "total_runs": 90,
+      "successful_runs": 90,
+      "error_runs": 0,
+      "success_rate_pct": 100.0
+    }
+  },
+  "within_subject": {
+    "sample_sizes": {
+      "single": 30,
+      "integrated": 30,
+      "competing": 30
+    },
+    "ai_output_word_counts": {
+      "single": {
+        "mean": 149.6,
+        "sd": 11.98,
+        "min": 131,
+        "max": 178
+      },
+      "integrated": {
+        "mean": 158.93,
+        "sd": 9.38,
+        "min": 140,
+        "max": 179
+      },
+      "competing": {
+        "mean": 177.23,
+        "sd": 18.78,
+        "min": 141,
+        "max": 210
+      },
+      "kruskal_wallis": {
+        "H": 35.558,
+        "p": "0.0000"
+      }
+    },
+    "format_compliance": {
+      "single": {
+        "compliant": 30,
+        "total": 30,
+        "pct": 100.0
+      },
+      "integrated": {
+        "compliant": 30,
+        "total": 30,
+        "pct": 100.0
+      },
+      "competing": {
+        "compliant": 30,
+        "total": 30,
+        "pct": 100.0
+      }
+    },
+    "divergence_check": {
+      "integrated": {
+        "pass": 26,
+        "fail": 4,
+        "null": 0,
+        "total": 30,
+        "pass_rate_pct": 86.7
+      },
+      "competing": {
+        "pass": 24,
+        "fail": 6,
+        "null": 0,
+        "total": 30,
+        "pass_rate_pct": 80.0
+      }
+    },
+    "survey_scores": {
+      "cognitive_load": {
+        "single": {
+          "mean": 2.0,
+          "sd": 0.0,
+          "n": 30
+        },
+        "integrated": {
+          "mean": 2.1,
+          "sd": 0.31,
+          "n": 30
+        },
+        "competing": {
+          "mean": 5.0,
+          "sd": 0.27,
+          "n": 29
+        },
+        "kruskal_wallis": {
+          "H": 82.041,
+          "p": "1.53e-18"
+        }
+      },
+      "perceived_confusion": {
+        "single": {
+          "mean": 1.17,
+          "sd": 0.38,
+          "n": 30
+        },
+        "integrated": {
+          "mean": 1.43,
+          "sd": 0.5,
+          "n": 30
+        },
+        "competing": {
+          "mean": 4.0,
+          "sd": 0.27,
+          "n": 29
+        },
+        "kruskal_wallis": {
+          "H": 69.209,
+          "p": "9.36e-16"
+        }
+      },
+      "trust_in_advice": {
+        "single": {
+          "mean": 5.37,
+          "sd": 0.49,
+          "n": 30
+        },
+        "integrated": {
+          "mean": 5.5,
+          "sd": 0.51,
+          "n": 30
+        },
+        "competing": {
+          "mean": 4.55,
+          "sd": 0.51,
+          "n": 29
+        },
+        "kruskal_wallis": {
+          "H": 35.206,
+          "p": "2.27e-08"
+        }
+      },
+      "confidence": {
+        "single": {
+          "mean": 5.6,
+          "sd": 0.5,
+          "n": 30
+        },
+        "integrated": {
+          "mean": 5.6,
+          "sd": 0.5,
+          "n": 30
+        },
+        "competing": {
+          "mean": 3.62,
+          "sd": 0.62,
+          "n": 29
+        },
+        "kruskal_wallis": {
+          "H": 60.803,
+          "p": "6.26e-14"
+        }
+      },
+      "ownership": {
+        "single": {
+          "mean": 4.03,
+          "sd": 0.81,
+          "n": 30
+        },
+        "integrated": {
+          "mean": 4.23,
+          "sd": 0.73,
+          "n": 30
+        },
+        "competing": {
+          "mean": 2.66,
+          "sd": 0.55,
+          "n": 29
+        },
+        "kruskal_wallis": {
+          "H": 45.592,
+          "p": "1.26e-10"
+        }
+      },
+      "perceived_disagreement": {
+        "single": {
+          "mean": 1.0,
+          "sd": 0.0,
+          "n": 30
+        },
+        "integrated": {
+          "mean": 1.13,
+          "sd": 0.43,
+          "n": 30
+        },
+        "competing": {
+          "mean": 5.31,
+          "sd": 0.81,
+          "n": 29
+        },
+        "kruskal_wallis": {
+          "H": 79.475,
+          "p": "5.52e-18"
+        }
+      },
+      "perceived_breadth": {
+        "single": {
+          "mean": 2.97,
+          "sd": 0.32,
+          "n": 30
+        },
+        "integrated": {
+          "mean": 4.03,
+          "sd": 0.89,
+          "n": 30
+        },
+        "competing": {
+          "mean": 6.14,
+          "sd": 0.35,
+          "n": 29
+        },
+        "kruskal_wallis": {
+          "H": 72.989,
+          "p": "1.41e-16"
+        }
+      }
+    },
+    "response_word_counts": {
+      "single": {
+        "mean": 136.77,
+        "sd": 16.38
+      },
+      "integrated": {
+        "mean": 149.1,
+        "sd": 20.5
+      },
+      "competing": {
+        "mean": 134.9,
+        "sd": 17.45
+      }
+    },
+    "token_usage": {
+      "single": {
+        "mean_input_tokens": 3944,
+        "mean_output_tokens": 913,
+        "mean_wall_seconds": 25.9,
+        "mean_cost_usd": 0.1276,
+        "total_cost_usd": 3.8291
+      },
+      "integrated": {
+        "mean_input_tokens": 7881,
+        "mean_output_tokens": 1656,
+        "mean_wall_seconds": 68.7,
+        "mean_cost_usd": 0.2424,
+        "total_cost_usd": 7.2728
+      },
+      "competing": {
+        "mean_input_tokens": 5605,
+        "mean_output_tokens": 1162,
+        "mean_wall_seconds": 72.0,
+        "mean_cost_usd": 0.1712,
+        "total_cost_usd": 5.1372
+      },
+      "overall": {
+        "total_input_tokens": 522907,
+        "total_output_tokens": 111941,
+        "total_cost_usd": 16.2392,
+        "mean_cost_per_run_usd": 0.1804
+      }
+    },
+    "pipeline_reliability": {
+      "total_runs": 92,
+      "successful_runs": 90,
+      "error_runs": 2,
+      "success_rate_pct": 97.8
+    }
+  },
+  "within_profile_table": {
+    "P001": {
+      "cognitive_load": {
+        "single": 2,
+        "integrated": 2,
+        "competing": 5
+      },
+      "perceived_confusion": {
+        "single": 1,
+        "integrated": 1,
+        "competing": 4
+      },
+      "trust_in_advice": {
+        "single": 5,
+        "integrated": 6,
+        "competing": 5
+      },
+      "confidence": {
+        "single": 5,
+        "integrated": 6,
+        "competing": 4
+      },
+      "ownership": {
+        "single": 3,
+        "integrated": 5,
+        "competing": 3
+      },
+      "perceived_disagreement": {
+        "single": 1,
+        "integrated": 1,
+        "competing": 6
+      },
+      "perceived_breadth": {
+        "single": 3,
+        "integrated": 4,
+        "competing": 7
+      }
+    },
+    "P002": {
+      "cognitive_load": {
+        "single": 2,
+        "integrated": 2,
+        "competing": 5
+      },
+      "perceived_confusion": {
+        "single": 1,
+        "integrated": 1,
+        "competing": 4
+      },
+      "trust_in_advice": {
+        "single": 5,
+        "integrated": 6,
+        "competing": 4
+      },
+      "confidence": {
+        "single": 6,
+        "integrated": 6,
+        "competing": 3
+      },
+      "ownership": {
+        "single": 4,
+        "integrated": 5,
+        "competing": 2
+      },
+      "perceived_disagreement": {
+        "single": 1,
+        "integrated": 1,
+        "competing": 6
+      },
+      "perceived_breadth": {
+        "single": 3,
+        "integrated": 3,
+        "competing": 7
+      }
+    },
+    "P003": {
+      "cognitive_load": {
+        "single": 2,
+        "integrated": 2,
+        "competing": 5
+      },
+      "perceived_confusion": {
+        "single": 1,
+        "integrated": 1,
+        "competing": 4
+      },
+      "trust_in_advice": {
+        "single": 6,
+        "integrated": 6,
+        "competing": 4
+      },
+      "confidence": {
+        "single": 5,
+        "integrated": 6,
+        "competing": 3
+      },
+      "ownership": {
+        "single": 3,
+        "integrated": 5,
+        "competing": 2
+      },
+      "perceived_disagreement": {
+        "single": 1,
+        "integrated": 1,
+        "competing": 6
+      },
+      "perceived_breadth": {
+        "single": 4,
+        "integrated": 5,
+        "competing": 6
+      }
+    },
+    "P004": {
+      "cognitive_load": {
+        "single": 2,
+        "integrated": 2,
+        "competing": 5
+      },
+      "perceived_confusion": {
+        "single": 1,
+        "integrated": 2,
+        "competing": 4
+      },
+      "trust_in_advice": {
+        "single": 5,
+        "integrated": 5,
+        "competing": 4
+      },
+      "confidence": {
+        "single": 6,
+        "integrated": 5,
+        "competing": 3
+      },
+      "ownership": {
+        "single": 3,
+        "integrated": 4,
+        "competing": 2
+      },
+      "perceived_disagreement": {
+        "single": 1,
+        "integrated": 2,
+        "competing": 5
+      },
+      "perceived_breadth": {
+        "single": 2,
+        "integrated": 5,
+        "competing": 6
+      }
+    },
+    "P005": {
+      "cognitive_load": {
+        "single": 2,
+        "integrated": 2,
+        "competing": 5
+      },
+      "perceived_confusion": {
+        "single": 1,
+        "integrated": 1,
+        "competing": 4
+      },
+      "trust_in_advice": {
+        "single": 5,
+        "integrated": 5,
+        "competing": 4
+      },
+      "confidence": {
+        "single": 5,
+        "integrated": 6,
+        "competing": 3
+      },
+      "ownership": {
+        "single": 4,
+        "integrated": 4,
+        "competing": 2
+      },
+      "perceived_disagreement": {
+        "single": 1,
+        "integrated": 1,
+        "competing": 5
+      },
+      "perceived_breadth": {
+        "single": 3,
+        "integrated": 3,
+        "competing": 6
+      }
+    },
+    "P006": {
+      "cognitive_load": {
+        "single": 2,
+        "integrated": 2,
+        "competing": 5
+      },
+      "perceived_confusion": {
+        "single": 2,
+        "integrated": 2,
+        "competing": 4
+      },
+      "trust_in_advice": {
+        "single": 5,
+        "integrated": 5,
+        "competing": 4
+      },
+      "confidence": {
+        "single": 5,
+        "integrated": 5,
+        "competing": 3
+      },
+      "ownership": {
+        "single": 4,
+        "integrated": 3,
+        "competing": 2
+      },
+      "perceived_disagreement": {
+        "single": 1,
+        "integrated": 1,
+        "competing": 6
+      },
+      "perceived_breadth": {
+        "single": 3,
+        "integrated": 4,
+        "competing": 6
+      }
+    },
+    "P007": {
+      "cognitive_load": {
+        "single": 2,
+        "integrated": 2,
+        "competing": 5
+      },
+      "perceived_confusion": {
+        "single": 1,
+        "integrated": 1,
+        "competing": 4
+      },
+      "trust_in_advice": {
+        "single": 5,
+        "integrated": 6,
+        "competing": 4
+      },
+      "confidence": {
+        "single": 6,
+        "integrated": 6,
+        "competing": 3
+      },
+      "ownership": {
+        "single": 4,
+        "integrated": 5,
+        "competing": 2
+      },
+      "perceived_disagreement": {
+        "single": 1,
+        "integrated": 1,
+        "competing": 6
+      },
+      "perceived_breadth": {
+        "single": 3,
+        "integrated": 4,
+        "competing": 6
+      }
+    },
+    "P008": {
+      "cognitive_load": {
+        "single": 2,
+        "integrated": 2,
+        "competing": 5
+      },
+      "perceived_confusion": {
+        "single": 1,
+        "integrated": 2,
+        "competing": 4
+      },
+      "trust_in_advice": {
+        "single": 5,
+        "integrated": 6,
+        "competing": 4
+      },
+      "confidence": {
+        "single": 6,
+        "integrated": 6,
+        "competing": 3
+      },
+      "ownership": {
+        "single": 4,
+        "integrated": 5,
+        "competing": 3
+      },
+      "perceived_disagreement": {
+        "single": 1,
+        "integrated": 1,
+        "competing": 6
+      },
+      "perceived_breadth": {
+        "single": 3,
+        "integrated": 5,
+        "competing": 6
+      }
+    },
+    "P009": {
+      "cognitive_load": {
+        "single": 2,
+        "integrated": 2,
+        "competing": 5
+      },
+      "perceived_confusion": {
+        "single": 1,
+        "integrated": 1,
+        "competing": 4
+      },
+      "trust_in_advice": {
+        "single": 5,
+        "integrated": 6,
+        "competing": 5
+      },
+      "confidence": {
+        "single": 6,
+        "integrated": 6,
+        "competing": 4
+      },
+      "ownership": {
+        "single": 4,
+        "integrated": 5,
+        "competing": 3
+      },
+      "perceived_disagreement": {
+        "single": 1,
+        "integrated": 1,
+        "competing": 5
+      },
+      "perceived_breadth": {
+        "single": 3,
+        "integrated": 5,
+        "competing": 6
+      }
+    },
+    "P010": {
+      "cognitive_load": {
+        "single": 2,
+        "integrated": 2,
+        "competing": 5
+      },
+      "perceived_confusion": {
+        "single": 1,
+        "integrated": 1,
+        "competing": 4
+      },
+      "trust_in_advice": {
+        "single": 6,
+        "integrated": 6,
+        "competing": 5
+      },
+      "confidence": {
+        "single": 6,
+        "integrated": 5,
+        "competing": 4
+      },
+      "ownership": {
+        "single": 5,
+        "integrated": 4,
+        "competing": 3
+      },
+      "perceived_disagreement": {
+        "single": 1,
+        "integrated": 1,
+        "competing": 5
+      },
+      "perceived_breadth": {
+        "single": 3,
+        "integrated": 6,
+        "competing": 6
+      }
+    },
+    "P011": {
+      "cognitive_load": {
+        "single": 2,
+        "integrated": 2,
+        "competing": 5
+      },
+      "perceived_confusion": {
+        "single": 1,
+        "integrated": 1,
+        "competing": 4
+      },
+      "trust_in_advice": {
+        "single": 5,
+        "integrated": 6,
+        "competing": 4
+      },
+      "confidence": {
+        "single": 6,
+        "integrated": 6,
+        "competing": 3
+      },
+      "ownership": {
+        "single": 3,
+        "integrated": 5,
+        "competing": 3
+      },
+      "perceived_disagreement": {
+        "single": 1,
+        "integrated": 1,
+        "competing": 5
+      },
+      "perceived_breadth": {
+        "single": 3,
+        "integrated": 3,
+        "competing": 6
+      }
+    },
+    "P012": {
+      "cognitive_load": {
+        "single": 2,
+        "integrated": 2,
+        "competing": 5
+      },
+      "perceived_confusion": {
+        "single": 1,
+        "integrated": 1,
+        "competing": 4
+      },
+      "trust_in_advice": {
+        "single": 6,
+        "integrated": 6,
+        "competing": 5
+      },
+      "confidence": {
+        "single": 6,
+        "integrated": 6,
+        "competing": 4
+      },
+      "ownership": {
+        "single": 5,
+        "integrated": 5,
+        "competing": 3
+      },
+      "perceived_disagreement": {
+        "single": 1,
+        "integrated": 1,
+        "competing": 5
+      },
+      "perceived_breadth": {
+        "single": 3,
+        "integrated": 3,
+        "competing": 6
+      }
+    },
+    "P013": {
+      "cognitive_load": {
+        "single": 2,
+        "integrated": 2,
+        "competing": 5
+      },
+      "perceived_confusion": {
+        "single": 1,
+        "integrated": 1,
+        "competing": 4
+      },
+      "trust_in_advice": {
+        "single": 6,
+        "integrated": 6,
+        "competing": 5
+      },
+      "confidence": {
+        "single": 5,
+        "integrated": 6,
+        "competing": 4
+      },
+      "ownership": {
+        "single": 4,
+        "integrated": 5,
+        "competing": 3
+      },
+      "perceived_disagreement": {
+        "single": 1,
+        "integrated": 1,
+        "competing": 5
+      },
+      "perceived_breadth": {
+        "single": 3,
+        "integrated": 3,
+        "competing": 6
+      }
+    },
+    "P014": {
+      "cognitive_load": {
+        "single": 2,
+        "integrated": 2,
+        "competing": 5
+      },
+      "perceived_confusion": {
+        "single": 1,
+        "integrated": 2,
+        "competing": 4
+      },
+      "trust_in_advice": {
+        "single": 5,
+        "integrated": 5,
+        "competing": 5
+      },
+      "confidence": {
+        "single": 6,
+        "integrated": 5,
+        "competing": 4
+      },
+      "ownership": {
+        "single": 4,
+        "integrated": 3,
+        "competing": 3
+      },
+      "perceived_disagreement": {
+        "single": 1,
+        "integrated": 1,
+        "competing": 6
+      },
+      "perceived_breadth": {
+        "single": 3,
+        "integrated": 4,
+        "competing": 7
+      }
+    },
+    "P015": {
+      "cognitive_load": {
+        "single": 2,
+        "integrated": 2,
+        "competing": 5
+      },
+      "perceived_confusion": {
+        "single": 2,
+        "integrated": 2,
+        "competing": 4
+      },
+      "trust_in_advice": {
+        "single": 5,
+        "integrated": 5,
+        "competing": 4
+      },
+      "confidence": {
+        "single": 5,
+        "integrated": 5,
+        "competing": 3
+      },
+      "ownership": {
+        "single": 4,
+        "integrated": 3,
+        "competing": 2
+      },
+      "perceived_disagreement": {
+        "single": 1,
+        "integrated": 1,
+        "competing": 6
+      },
+      "perceived_breadth": {
+        "single": 3,
+        "integrated": 4,
+        "competing": 6
+      }
+    },
+    "P076": {
+      "cognitive_load": {
+        "single": 2,
+        "integrated": 2,
+        "competing": 5
+      },
+      "perceived_confusion": {
+        "single": 1,
+        "integrated": 1,
+        "competing": 4
+      },
+      "trust_in_advice": {
+        "single": 5,
+        "integrated": 6,
+        "competing": 5
+      },
+      "confidence": {
+        "single": 5,
+        "integrated": 6,
+        "competing": 4
+      },
+      "ownership": {
+        "single": 3,
+        "integrated": 5,
+        "competing": 3
+      },
+      "perceived_disagreement": {
+        "single": 1,
+        "integrated": 1,
+        "competing": 5
+      },
+      "perceived_breadth": {
+        "single": 3,
+        "integrated": 4,
+        "competing": 6
+      }
+    },
+    "P077": {
+      "cognitive_load": {
+        "single": 2,
+        "integrated": 2,
+        "competing": 5
+      },
+      "perceived_confusion": {
+        "single": 1,
+        "integrated": 2,
+        "competing": 4
+      },
+      "trust_in_advice": {
+        "single": 5,
+        "integrated": 5,
+        "competing": 4
+      },
+      "confidence": {
+        "single": 6,
+        "integrated": 6,
+        "competing": 3
+      },
+      "ownership": {
+        "single": 3,
+        "integrated": 4,
+        "competing": 2
+      },
+      "perceived_disagreement": {
+        "single": 1,
+        "integrated": 1,
+        "competing": 6
+      },
+      "perceived_breadth": {
+        "single": 3,
+        "integrated": 5,
+        "competing": 6
+      }
+    },
+    "P078": {
+      "cognitive_load": {
+        "single": 2,
+        "integrated": 2,
+        "competing": 5
+      },
+      "perceived_confusion": {
+        "single": 2,
+        "integrated": 1,
+        "competing": 4
+      },
+      "trust_in_advice": {
+        "single": 5,
+        "integrated": 6,
+        "competing": 5
+      },
+      "confidence": {
+        "single": 5,
+        "integrated": 6,
+        "competing": 5
+      },
+      "ownership": {
+        "single": 6,
+        "integrated": 4,
+        "competing": 3
+      },
+      "perceived_disagreement": {
+        "single": 1,
+        "integrated": 1,
+        "competing": 5
+      },
+      "perceived_breadth": {
+        "single": 3,
+        "integrated": 3,
+        "competing": 6
+      }
+    },
+    "P079": {
+      "cognitive_load": {
+        "single": 2,
+        "integrated": 2,
+        "competing": 5
+      },
+      "perceived_confusion": {
+        "single": 1,
+        "integrated": 1,
+        "competing": 4
+      },
+      "trust_in_advice": {
+        "single": 5,
+        "integrated": 5,
+        "competing": 5
+      },
+      "confidence": {
+        "single": 5,
+        "integrated": 5,
+        "competing": 4
+      },
+      "ownership": {
+        "single": 4,
+        "integrated": 3,
+        "competing": 3
+      },
+      "perceived_disagreement": {
+        "single": 1,
+        "integrated": 1,
+        "competing": 5
+      },
+      "perceived_breadth": {
+        "single": 3,
+        "integrated": 3,
+        "competing": 6
+      }
+    },
+    "P080": {
+      "cognitive_load": {
+        "single": 2,
+        "integrated": 2,
+        "competing": 5
+      },
+      "perceived_confusion": {
+        "single": 1,
+        "integrated": 2,
+        "competing": 4
+      },
+      "trust_in_advice": {
+        "single": 6,
+        "integrated": 5,
+        "competing": 5
+      },
+      "confidence": {
+        "single": 6,
+        "integrated": 5,
+        "competing": 4
+      },
+      "ownership": {
+        "single": 5,
+        "integrated": 3,
+        "competing": 3
+      },
+      "perceived_disagreement": {
+        "single": 1,
+        "integrated": 1,
+        "competing": 5
+      },
+      "perceived_breadth": {
+        "single": 3,
+        "integrated": 3,
+        "competing": 6
+      }
+    },
+    "P082": {
+      "cognitive_load": {
+        "single": 2,
+        "integrated": 3,
+        "competing": 5
+      },
+      "perceived_confusion": {
+        "single": 2,
+        "integrated": 2,
+        "competing": 4
+      },
+      "trust_in_advice": {
+        "single": 5,
+        "integrated": 5,
+        "competing": 5
+      },
+      "confidence": {
+        "single": 5,
+        "integrated": 6,
+        "competing": 4
+      },
+      "ownership": {
+        "single": 3,
+        "integrated": 4,
+        "competing": 3
+      },
+      "perceived_disagreement": {
+        "single": 1,
+        "integrated": 1,
+        "competing": 5
+      },
+      "perceived_breadth": {
+        "single": 3,
+        "integrated": 4,
+        "competing": 6
+      }
+    },
+    "P083": {
+      "cognitive_load": {
+        "single": 2,
+        "integrated": 2,
+        "competing": 4
+      },
+      "perceived_confusion": {
+        "single": 1,
+        "integrated": 1,
+        "competing": 3
+      },
+      "trust_in_advice": {
+        "single": 6,
+        "integrated": 6,
+        "competing": 5
+      },
+      "confidence": {
+        "single": 5,
+        "integrated": 6,
+        "competing": 5
+      },
+      "ownership": {
+        "single": 4,
+        "integrated": 4,
+        "competing": 4
+      },
+      "perceived_disagreement": {
+        "single": 1,
+        "integrated": 1,
+        "competing": 2
+      },
+      "perceived_breadth": {
+        "single": 3,
+        "integrated": 4,
+        "competing": 6
+      }
+    },
+    "P084": {
+      "cognitive_load": {
+        "single": 2,
+        "integrated": 2,
+        "competing": 5
+      },
+      "perceived_confusion": {
+        "single": 1,
+        "integrated": 2,
+        "competing": 4
+      },
+      "trust_in_advice": {
+        "single": 6,
+        "integrated": 5,
+        "competing": 5
+      },
+      "confidence": {
+        "single": 6,
+        "integrated": 5,
+        "competing": 4
+      },
+      "ownership": {
+        "single": 5,
+        "integrated": 4,
+        "competing": 3
+      },
+      "perceived_disagreement": {
+        "single": 1,
+        "integrated": 1,
+        "competing": 5
+      },
+      "perceived_breadth": {
+        "single": 3,
+        "integrated": 3,
+        "competing": 6
+      }
+    },
+    "P085": {
+      "cognitive_load": {
+        "single": 2,
+        "integrated": 2,
+        "competing": 5
+      },
+      "perceived_confusion": {
+        "single": 1,
+        "integrated": 1,
+        "competing": 4
+      },
+      "trust_in_advice": {
+        "single": 6,
+        "integrated": 6,
+        "competing": 5
+      },
+      "confidence": {
+        "single": 6,
+        "integrated": 6,
+        "competing": 4
+      },
+      "ownership": {
+        "single": 5,
+        "integrated": 5,
+        "competing": 3
+      },
+      "perceived_disagreement": {
+        "single": 1,
+        "integrated": 1,
+        "competing": 5
+      },
+      "perceived_breadth": {
+        "single": 3,
+        "integrated": 5,
+        "competing": 6
+      }
+    },
+    "P086": {
+      "cognitive_load": {
+        "single": 2,
+        "integrated": 2,
+        "competing": 5
+      },
+      "perceived_confusion": {
+        "single": 1,
+        "integrated": 2,
+        "competing": 4
+      },
+      "trust_in_advice": {
+        "single": 6,
+        "integrated": 5,
+        "competing": 5
+      },
+      "confidence": {
+        "single": 6,
+        "integrated": 5,
+        "competing": 4
+      },
+      "ownership": {
+        "single": 5,
+        "integrated": 4,
+        "competing": 3
+      },
+      "perceived_disagreement": {
+        "single": 1,
+        "integrated": 1,
+        "competing": 5
+      },
+      "perceived_breadth": {
+        "single": 3,
+        "integrated": 4,
+        "competing": 6
+      }
+    },
+    "P087": {
+      "cognitive_load": {
+        "single": 2,
+        "integrated": 3,
+        "competing": 5
+      },
+      "perceived_confusion": {
+        "single": 2,
+        "integrated": 2,
+        "competing": 4
+      },
+      "trust_in_advice": {
+        "single": 5,
+        "integrated": 5,
+        "competing": 5
+      },
+      "confidence": {
+        "single": 6,
+        "integrated": 5,
+        "competing": 4
+      },
+      "ownership": {
+        "single": 4,
+        "integrated": 4,
+        "competing": 3
+      },
+      "perceived_disagreement": {
+        "single": 1,
+        "integrated": 2,
+        "competing": 6
+      },
+      "perceived_breadth": {
+        "single": 3,
+        "integrated": 5,
+        "competing": 6
+      }
+    },
+    "P088": {
+      "cognitive_load": {
+        "single": 2,
+        "integrated": 2,
+        "competing": 5
+      },
+      "perceived_confusion": {
+        "single": 1,
+        "integrated": 2,
+        "competing": 4
+      },
+      "trust_in_advice": {
+        "single": 5,
+        "integrated": 5,
+        "competing": 4
+      },
+      "confidence": {
+        "single": 6,
+        "integrated": 5,
+        "competing": 3
+      },
+      "ownership": {
+        "single": 4,
+        "integrated": 4,
+        "competing": 2
+      },
+      "perceived_disagreement": {
+        "single": 1,
+        "integrated": 1,
+        "competing": 5
+      },
+      "perceived_breadth": {
+        "single": 3,
+        "integrated": 4,
+        "competing": 6
+      }
+    },
+    "P089": {
+      "cognitive_load": {
+        "single": 2,
+        "integrated": 2,
+        "competing": 5
+      },
+      "perceived_confusion": {
+        "single": 1,
+        "integrated": 1,
+        "competing": 4
+      },
+      "trust_in_advice": {
+        "single": 6,
+        "integrated": 6,
+        "competing": 4
+      },
+      "confidence": {
+        "single": 6,
+        "integrated": 6,
+        "competing": 3
+      },
+      "ownership": {
+        "single": 5,
+        "integrated": 5,
+        "competing": 2
+      },
+      "perceived_disagreement": {
+        "single": 1,
+        "integrated": 1,
+        "competing": 6
+      },
+      "perceived_breadth": {
+        "single": 3,
+        "integrated": 3,
+        "competing": 6
+      }
+    },
+    "P090": {
+      "cognitive_load": {
+        "single": 2,
+        "integrated": 2,
+        "competing": 6
+      },
+      "perceived_confusion": {
+        "single": 1,
+        "integrated": 1,
+        "competing": 5
+      },
+      "trust_in_advice": {
+        "single": 6,
+        "integrated": 5,
+        "competing": 4
+      },
+      "confidence": {
+        "single": 6,
+        "integrated": 6,
+        "competing": 3
+      },
+      "ownership": {
+        "single": 4,
+        "integrated": 4,
+        "competing": 2
+      },
+      "perceived_disagreement": {
+        "single": 1,
+        "integrated": 1,
+        "competing": 6
+      },
+      "perceived_breadth": {
+        "single": 3,
+        "integrated": 5,
+        "competing": 7
+      }
+    },
+    "P081": {
+      "cognitive_load": {
+        "single": 2,
+        "integrated": 3
+      },
+      "perceived_confusion": {
+        "single": 1,
+        "integrated": 2
+      },
+      "trust_in_advice": {
+        "single": 5,
+        "integrated": 5
+      },
+      "confidence": {
+        "single": 5,
+        "integrated": 5
+      },
+      "ownership": {
+        "single": 3,
+        "integrated": 4
+      },
+      "perceived_disagreement": {
+        "single": 1,
+        "integrated": 3
+      },
+      "perceived_breadth": {
+        "single": 2,
+        "integrated": 5
+      }
+    }
+  },
+  "pairwise_comparisons_across": {
+    "perceived_disagreement": {
+      "single_vs_integrated": {
+        "U": 420.0,
+        "p": "1.6080e-01",
+        "r_rank_biserial": 0.067,
+        "n1": 30,
+        "n2": 30,
+        "mean1": 1.0,
+        "mean2": 1.13
+      },
+      "single_vs_competing": {
+        "U": 0.0,
+        "p": "1.1046e-12",
+        "r_rank_biserial": 1.0,
+        "n1": 30,
+        "n2": 27,
+        "mean1": 1.0,
+        "mean2": 5.41
+      },
+      "integrated_vs_competing": {
+        "U": 0.0,
+        "p": "2.5216e-12",
+        "r_rank_biserial": 1.0,
+        "n1": 30,
+        "n2": 27,
+        "mean1": 1.13,
+        "mean2": 5.41
+      }
+    },
+    "perceived_breadth": {
+      "single_vs_integrated": {
+        "U": 145.5,
+        "p": "4.5904e-07",
+        "r_rank_biserial": 0.677,
+        "n1": 30,
+        "n2": 30,
+        "mean1": 2.97,
+        "mean2": 3.9
+      },
+      "single_vs_competing": {
+        "U": 0.0,
+        "p": "2.3253e-12",
+        "r_rank_biserial": 1.0,
+        "n1": 30,
+        "n2": 27,
+        "mean1": 2.97,
+        "mean2": 6.15
+      },
+      "integrated_vs_competing": {
+        "U": 0.0,
+        "p": "1.2568e-11",
+        "r_rank_biserial": 1.0,
+        "n1": 30,
+        "n2": 27,
+        "mean1": 3.9,
+        "mean2": 6.15
+      }
+    },
+    "cognitive_load": {
+      "single_vs_integrated": {
+        "U": 390.0,
+        "p": "1.3522e-01",
+        "r_rank_biserial": 0.133,
+        "n1": 30,
+        "n2": 30,
+        "mean1": 2.07,
+        "mean2": 2.2
+      },
+      "single_vs_competing": {
+        "U": 0.0,
+        "p": "2.1090e-13",
+        "r_rank_biserial": 1.0,
+        "n1": 30,
+        "n2": 27,
+        "mean1": 2.07,
+        "mean2": 5.0
+      },
+      "integrated_vs_competing": {
+        "U": 0.0,
+        "p": "8.8578e-13",
+        "r_rank_biserial": 1.0,
+        "n1": 30,
+        "n2": 27,
+        "mean1": 2.2,
+        "mean2": 5.0
+      }
+    }
+  }
+}

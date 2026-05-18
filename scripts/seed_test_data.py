@@ -33,16 +33,16 @@ async def seed():
 
         # Create 3 test invite codes (one per arm) + 6 more for testing
         test_codes = [
-            ("TEST001A", ArmType.control, "pilot_test"),
-            ("TEST002B", ArmType.analytic, "pilot_test"),
-            ("TEST003C", ArmType.constructive, "pilot_test"),
+            ("TEST001A", ArmType.c1, "pilot_test"),
+            ("TEST002B", ArmType.c2, "pilot_test"),
+            ("TEST003C", ArmType.c3, "pilot_test"),
             # Extra codes for bulk testing
-            (generate_invite_code(), ArmType.control, "pilot_test"),
-            (generate_invite_code(), ArmType.analytic, "pilot_test"),
-            (generate_invite_code(), ArmType.constructive, "pilot_test"),
-            (generate_invite_code(), ArmType.control, "pilot_test"),
-            (generate_invite_code(), ArmType.analytic, "pilot_test"),
-            (generate_invite_code(), ArmType.constructive, "pilot_test"),
+            (generate_invite_code(), ArmType.c1, "pilot_test"),
+            (generate_invite_code(), ArmType.c2, "pilot_test"),
+            (generate_invite_code(), ArmType.c3, "pilot_test"),
+            (generate_invite_code(), ArmType.c1, "pilot_test"),
+            (generate_invite_code(), ArmType.c2, "pilot_test"),
+            (generate_invite_code(), ArmType.c3, "pilot_test"),
         ]
 
         for code, arm, cohort in test_codes:

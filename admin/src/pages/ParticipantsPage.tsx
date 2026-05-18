@@ -28,7 +28,7 @@ export default function ParticipantsPage() {
       <div className="card">
         <div className="card-title">Upload CSV</div>
         <p style={{ fontSize: 13, color: '#757575', marginBottom: 12 }}>
-          CSV columns: name, phone, arm (control/analytic/constructive), cohort, industry_vertical
+          CSV columns: name, phone, arm (c1/c2/c3), cohort, industry_vertical
         </p>
         <div className="btn-row">
           <input type="file" accept=".csv" ref={fileRef} />

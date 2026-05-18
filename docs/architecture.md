@@ -108,9 +108,9 @@ backend/
 │   │   └── scheduler_service.py   ← APScheduler定时任务（每周AI主动发起对话）
 │   │
 │   ├── prompts/             ← ⭐ 实验操纵的核心 — 系统提示词模板
-│   │   ├── arm1_control.md        ← 控制组：结构化日记，不给建议
-│   │   ├── arm2_analytic.md       ← 分析组：给具体建议，不挑战假设
-│   │   ├── arm3_constructive.md   ← 建构组：用知识挑战思维框架
+│   │   ├── c1_single.md           ← C1: 单一诊断（1个AI agent）
+│   │   ├── c2_integrated.md       ← C2: 3个agent → 整合为1条建议（resolved disagreement）
+│   │   ├── c3_competing.md        ← C3: 3个agent → 3条独立诊断（preserved disagreement）
 │   │   └── shared/
 │   │       ├── conversation_rules.md  ← 所有组共享的对话规则
 │   │       └── knowledge/             ← 行业知识库（农业、零售、服务、食品饮料）
@@ -181,7 +181,7 @@ invite_codes (预生成)          participants (注册时创建)
 
 ```python
 system_prompt = join([
-    ARM_INSTRUCTIONS,        # ← arm1_control.md / arm2_analytic.md / arm3_constructive.md
+    ARM_INSTRUCTIONS,        # ← c1_single.md / c2_integrated.md / c3_competing.md
     PARTICIPANT_CONTEXT,     # ← 动态生成：名字、企业、行业、第几周
     KNOWLEDGE_CONTEXT,       # ← 行业知识文件（仅arm 2和3使用）
     CONVERSATION_RULES,      # ← 共享规则：语言匹配、安全守则、回复长度
@@ -189,8 +189,8 @@ system_prompt = join([
 ```
 
 **关键点：**
-- 控制组（arm1）**不会收到**行业知识文件 → AI无法提供领域建议
-- 分析组（arm2）和建构组（arm3）收到**完全相同的**行业知识 → 区别仅在于ARM_INSTRUCTIONS告诉AI如何使用这些知识
+- C1（单一诊断）**不会收到**行业知识文件 → AI仅基于通用知识
+- C2（整合）和C3（独立呈现）收到**完全相同的**行业知识 → 区别在于ARM_INSTRUCTIONS告诉AI如何使用这些知识，以及诊断是否整合
 - prompt模板存储为markdown文件，可以通过admin面板实时编辑
 - 修改prompt后自动清除缓存（`_prompt_cache.clear()`），下次请求生效
 
@@ -358,7 +358,7 @@ admin/src/
 
 - App名称、颜色、图标三个arm完全一致
 - 推送通知文字固定："Your mentor has a new message for you"（不含AI内容）
-- admin面板使用arm名称（control/analytic/constructive），可以映射为A/B/C
+- admin面板使用arm名称（c1/c2/c3），显示为C1 Single / C2 Integrated / C3 Competing
 - JWT中包含arm信息，但只在服务器端用于选择prompt，客户端不使用
 - 系统prompt永远不会暴露给客户端
 
@@ -367,9 +367,9 @@ admin/src/
 ```python
 # claude_service.py 中的关键代码
 arm_file = {
-    "control": "arm1_control.md",         # ← 结构化日记，不给建议
-    "analytic": "arm2_analytic.md",       # ← 给建议但不挑战假设
-    "constructive": "arm3_constructive.md", # ← 用知识挑战思维框架
+    "c1": "c1_single.md",           # ← C1: 单一诊断
+    "c2": "c2_integrated.md",       # ← C2: 3 agents → 整合为1条建议
+    "c3": "c3_competing.md",        # ← C3: 3 agents → 3条独立诊断
 }[participant.arm.value]
 ```
 
@@ -427,7 +427,7 @@ arm_file = {
         │   │ 2. 保存user message到PostgreSQL          │
         │   │ 3. 加载对话历史（最多20条）               │
         │   │ 4. claude_service.get_response():        │
-        │   │    a. 加载arm模板 (arm2_analytic.md)      │
+        │   │    a. 加载arm模板 (c2_integrated.md)       │
         │   │    b. 生成参与者上下文                     │
         │   │    c. 加载行业知识 (agriculture.md)       │
         │   │    d. 加载对话规则                        │
@@ -548,19 +548,16 @@ curl -s -X POST "http://localhost:8000/api/v1/conversations/${CONV_ID}/messages"
 # 对三个参与者说同样的话:
 # "I sell chapati at the market. Business is slow this month."
 
-# 控制组(TEST001A)应该回复类似:
-# "Thank you for sharing that. What progress did you make this week?"
-# (模板问题，没有任何建议)
+# C1 (TEST001A) — 单一诊断:
+# AI提供一个诊断和建议（基于单一agent视角）
 
-# 分析组(TEST002B)应该回复类似:
-# "Chapati businesses typically have 40-60% margins. To increase sales,
-#  you could try positioning near schools or offices during lunch hour."
-# (具体建议，在现有框架内优化)
+# C2 (TEST002B) — 整合诊断:
+# 3个agent各自分析 → integrator整合为1条综合建议
+# 参与者只看到整合后的单一建议
 
-# 建构组(TEST003C)应该回复类似:
-# "You describe this as a slow month, but what if the issue isn't demand
-#  but timing? What would change if you shifted to a catering model?"
-# (挑战假设，提供替代视角)
+# C3 (TEST003C) — 独立诊断:
+# 3个agent各自分析 → 3条独立诊断直接呈现
+# 参与者看到3个不同的视角，需要自己判断
 ```
 
 ### 7.6 启动移动端App
@@ -602,9 +599,9 @@ npm run dev
 创建一个 `test.csv` 文件：
 ```csv
 name,phone,arm,cohort,industry_vertical
-Alice Amara,+256700111111,control,pilot_test,Agriculture
-Bob Kato,+256700222222,analytic,pilot_test,Retail
-Carol Nakato,+256700333333,constructive,pilot_test,Services
+Alice Amara,+256700111111,c1,pilot_test,Agriculture
+Bob Kato,+256700222222,c2,pilot_test,Retail
+Carol Nakato,+256700333333,c3,pilot_test,Services
 ```
 
 上传后应该看到3个新邀请码生成。
@@ -695,7 +692,7 @@ APK分发:
 
 | 你想做什么 | 看哪个文件 |
 |------------|-----------|
-| 修改AI的行为/prompt | `backend/app/prompts/arm{1,2,3}_*.md` |
+| 修改AI的行为/prompt | `backend/app/prompts/c{1,2,3}_*.md` |
 | 修改问卷问题 | `backend/app/schemas/survey.py` 中的 `SURVEY_CONFIGS` |
 | 修改App的颜色/UI | `app/src/utils/constants.ts` 中的 `COLORS` |
 | 修改API URL | `app/src/utils/constants.ts` 中的 `API_URL` |

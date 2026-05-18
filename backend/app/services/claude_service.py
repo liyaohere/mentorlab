@@ -71,9 +71,9 @@ The following are key facts, preferences, and context you have learned about thi
     ) -> str:
         # 1. Arm-specific instructions
         arm_file = {
-            "control": "arm1_control.md",
-            "analytic": "arm2_analytic.md",
-            "constructive": "arm3_constructive.md",
+            "c1": "c1_single.md",
+            "c2": "c2_integrated.md",
+            "c3": "c3_competing.md",
         }[participant.arm.value]
         arm_instructions = self._load_template(arm_file)
 
@@ -82,7 +82,7 @@ The following are key facts, preferences, and context you have learned about thi
 
         # 3. Knowledge context (arms 2 & 3 only)
         knowledge = ""
-        if participant.arm.value != "control" and participant.industry_vertical:
+        if participant.arm.value != "c1" and participant.industry_vertical:
             slug = INDUSTRY_KNOWLEDGE_MAP.get(
                 participant.industry_vertical.lower(), "general"
             )

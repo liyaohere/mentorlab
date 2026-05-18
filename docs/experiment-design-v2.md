@@ -1,7 +1,7 @@
 # Experiment Design v2: Competing Diagnoses
 
 ## Status: Active design (April 2026)
-This document supersedes the original 3-arm design (control / analytic / constructive) described in `MentorLab_Engineering_Prompt_v1.md`. The system architecture (FastAPI + PostgreSQL + invite codes + conversation memory) remains the same; what changes is the treatment structure and AI prompt logic.
+This document describes the current 3-arm design: C1 (single) / C2 (integrated) / C3 (competing). The system architecture (FastAPI + PostgreSQL + invite codes + conversation memory) remains the same; what changes is the treatment structure and AI prompt logic.
 
 ---
 
@@ -181,8 +181,8 @@ For Condition 2 (integrated), the integrator output uses: "We analyzed your situ
 - **Condition 2 only**: 1 additional AI call with `integrator.md` prompt + the 3 diagnoses as input.
 - **Condition 3 only**: All 3 diagnoses presented directly. No integration step.
 
-### 3. Rewrite Arm Prompts
-- Replace `arm1_control.md`, `arm2_analytic.md`, `arm3_constructive.md` with:
+### 3. Arm Prompts
+- Current prompt files: `c1_single.md`, `c2_integrated.md`, `c3_competing.md`. Additional agent prompts:
   - `prompts/intake.md` (shared)
   - `prompts/agents/agent_a.md`, `agent_b.md`, `agent_c.md` (3 analytical lenses)
   - `prompts/agents/integrator.md` (for Condition 2)
@@ -203,7 +203,7 @@ For Condition 2 (integrated), the integrator output uses: "We analyzed your situ
 
 ### 6. Configuration
 - Arm assignment still via invite codes (unchanged)
-- Invite codes now map to: `single` / `integrated` / `competing` (instead of `control` / `analytic` / `constructive`)
+- Invite codes map to: `c1` / `c2` / `c3` (database arm values)
 
 ---
 

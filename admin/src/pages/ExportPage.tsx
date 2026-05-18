@@ -85,7 +85,7 @@ export default function ExportPage() {
               {history.map((h) => (
                 <tr key={h.id}>
                   <td>
-                    <span className={`badge ${h.type === 'transcripts' ? 'badge-analytic' : 'badge-constructive'}`}>
+                    <span className={`badge ${h.type === 'transcripts' ? 'badge-c2' : 'badge-c3'}`}>
                       {h.type}
                     </span>
                   </td>

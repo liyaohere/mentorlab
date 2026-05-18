@@ -75,6 +75,10 @@ class Conversation(Base):
     confidence_score: Mapped[float | None] = mapped_column(Float)
     ownership_score: Mapped[float | None] = mapped_column(Float)
 
+    # Manipulation checks (Likert 1-7)
+    perceived_disagreement_score: Mapped[float | None] = mapped_column(Float)
+    perceived_breadth_score: Mapped[float | None] = mapped_column(Float)
+
     # Time tracking (seconds)
     reading_time_seconds: Mapped[int | None] = mapped_column(Integer)
     writing_time_seconds: Mapped[int | None] = mapped_column(Integer)

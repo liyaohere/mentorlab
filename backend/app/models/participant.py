@@ -10,10 +10,10 @@ from app.database import Base
 
 
 class ArmType(str, enum.Enum):
-    """Legacy arm types (v1 design). Kept for backwards compatibility."""
-    control = "control"
-    analytic = "analytic"
-    constructive = "constructive"
+    """Experiment arms — maps 1:1 to ConditionType (c1→single, c2→integrated, c3→competing)."""
+    c1 = "c1"
+    c2 = "c2"
+    c3 = "c3"
 
 
 class ConditionType(str, enum.Enum):
