@@ -46,16 +46,6 @@ export async function apiFetch<T>(
     return { status: "complete" } as unknown as T;
   }
 
-  // FIXME: mock here
-  if (endpoint.endsWith("/voice/transcribe") && import.meta.env.DEV) {
-    await new Promise((resolve) => setTimeout(resolve, 1500));
-    return {
-      transcript:
-        "This is a simulated transcription from your voice recording. I am building a business in Uganda.",
-      audio_url: null,
-    } as unknown as T;
-  }
-
   const token = localStorage.getItem("token");
   const headers: Record<string, string> = {
     "Content-Type": "application/json",

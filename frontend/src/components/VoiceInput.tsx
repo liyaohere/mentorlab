@@ -63,31 +63,26 @@ export function VoiceInput({ conversationId, onTranscription, disabled }: VoiceI
     const mimeType = mediaRecorderRef.current?.mimeType || 'audio/webm';
     const blob = new Blob(audioChunksRef.current, { type: mimeType });
 
-    // 准备上传表单
     const formData = new FormData();
     const ext = mimeType.includes('mp4') ? 'm4a' : mimeType.includes('wav') ? 'wav' : 'webm';
-    formData.append('audio', blob, `recording.${ext}`);
+
+    formData.append('file', blob, `recording.${ext}`);
     formData.append('conversation_id', conversationId);
 
     try {
       const token = localStorage.getItem('token');
       const API_BASE = import.meta.env.DEV ? '/api/v1' : 'https://your-production-url.com/api/v1';
 
-      let data;
-      // NOTE: mock here
-      if (import.meta.env.DEV) {
-        data = await apiFetch<any>('/voice/transcribe', { method: 'POST' });
-      } else {
-        const res = await fetch(`${API_BASE}/voice/transcribe`, {
-          method: 'POST',
-          headers: token ? { 'Authorization': `Bearer ${token}` } : {},
-          body: formData
-        });
-        if (!res.ok) throw new Error("Transcription failed");
-        data = await res.json();
-      }
+      const res = await fetch(`${API_BASE}/voice/transcribe`, {
+        method: 'POST',
+        headers: token ? { 'Authorization': `Bearer ${token}` } : {},
+        body: formData
+      });
 
-      onTranscription(data.transcript);
+      if (!res.ok) throw new Error("Transcription failed");
+      const data = await res.json();
+
+      onTranscription(data.transcript || data.text);
     } catch (err) {
       console.error("Upload failed", err);
       alert("Transcription failed. Please try again or type your answer.");
