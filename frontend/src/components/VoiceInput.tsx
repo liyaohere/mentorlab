@@ -66,7 +66,7 @@ export function VoiceInput({ conversationId, onTranscription, disabled }: VoiceI
     const formData = new FormData();
     const ext = mimeType.includes('mp4') ? 'm4a' : mimeType.includes('wav') ? 'wav' : 'webm';
 
-    formData.append('file', blob, `recording.${ext}`);
+    formData.append('audio', blob, `recording.${ext}`);
     formData.append('conversation_id', conversationId);
 
     try {
