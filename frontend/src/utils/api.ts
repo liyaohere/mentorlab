@@ -32,20 +32,6 @@ export async function apiFetch<T>(
     } as unknown as T;
   }
 
-  if (endpoint.endsWith("/selection") && import.meta.env.DEV) {
-    return { status: "ok" } as unknown as T;
-  }
-
-  if (endpoint.endsWith("/response") && import.meta.env.DEV) {
-    await new Promise((resolve) => setTimeout(resolve, 800));
-    return { status: "ok", next: "survey" } as unknown as T;
-  }
-
-  if (endpoint.endsWith("/survey") && import.meta.env.DEV) {
-    await new Promise((resolve) => setTimeout(resolve, 800));
-    return { status: "complete" } as unknown as T;
-  }
-
   const token = localStorage.getItem("token");
   const headers: Record<string, string> = {
     "Content-Type": "application/json",
