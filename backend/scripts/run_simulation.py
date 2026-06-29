@@ -44,7 +44,7 @@ RESULTS_DIR = Path(__file__).parent / "simulation_results"
 
 MODEL_MAP = {
     "sonnet": "claude-sonnet-4",
-    "opus": "claude-opus-4",
+    "opus": "claude-opus-4-8",
     "gpt4o": "gpt-4o",
     "gpt4o-mini": "gpt-4o-mini",
 }

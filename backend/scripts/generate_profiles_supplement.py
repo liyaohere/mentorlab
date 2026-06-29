@@ -94,7 +94,7 @@ async def generate_supplement():
     import anthropic
 
     client = anthropic.AsyncAnthropic(timeout=httpx.Timeout(600.0, connect=10.0))
-    model = "claude-opus-4"
+    model = "claude-opus-4-8"
 
     # Load existing profiles to avoid repetition
     with open(PROFILES_PATH) as f:

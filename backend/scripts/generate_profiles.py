@@ -207,7 +207,7 @@ async def main():
     # Use Anthropic if key is available, otherwise OpenAI
     anthropic_key = os.environ.get("ANTHROPIC_API_KEY", "")
     if anthropic_key:
-        model = "claude-opus-4"
+        model = "claude-opus-4-8"
     else:
         model = "gpt-4o"
 
