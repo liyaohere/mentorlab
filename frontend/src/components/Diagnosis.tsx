@@ -26,7 +26,6 @@ export function Diagnosis() {
         });
         setDiagnoses(data.diagnoses);
         setPromptText(data.response_prompt);
-        // 数据加载完毕，开始计时
         startTimeRef.current = Date.now();
       } catch (err) {
         console.error("Diagnosis generation failed", err);
@@ -41,16 +40,15 @@ export function Diagnosis() {
     if (!conversationId) return;
     setSubmitting(true);
 
-    // 计算阅读时间 (秒)
+    // calc the reading time
     const readingTimeSeconds = Math.round((Date.now() - startTimeRef.current) / 1000);
     setDiagnosisData(promptText, readingTimeSeconds);
 
     try {
-      // 如果是 C3 条件，需要把选择结果发给后端
       if (condition === 'competing' && selectedReading !== null) {
         await apiFetch(`/interview/${conversationId}/selection`, {
           method: 'POST',
-          body: JSON.stringify({ selection_choice: selectedReading })
+          body: JSON.stringify({ choice: selectedReading })
         });
       }
       setPhase('response');
@@ -70,7 +68,6 @@ export function Diagnosis() {
     );
   }
 
-  // C3 实验组：暴露分歧
   if (condition === 'competing') {
     const labels = ["One reading of your situation:", "A different reading:", "A third possibility:"];
 
