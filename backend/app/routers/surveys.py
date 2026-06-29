@@ -32,7 +32,9 @@ async def get_survey_config(survey_type: str):
     """Get the question config for a survey type."""
     config = SURVEY_CONFIGS.get(survey_type)
     if not config:
-        raise HTTPException(status_code=404, detail=f"Unknown survey type: {survey_type}")
+        raise HTTPException(
+            status_code=404, detail=f"Unknown survey type: {survey_type}"
+        )
     return config
 
 
@@ -54,25 +56,49 @@ async def get_pending_surveys(
     # Baseline: if not completed
     if ("baseline", None) not in completed and ("baseline", 0) not in completed:
         cfg = SURVEY_CONFIGS["baseline"]
-        pending.append(PendingSurvey(survey_type="baseline", title=cfg.title, description=cfg.description))
+        pending.append(
+            PendingSurvey(
+                survey_type="baseline", title=cfg.title, description=cfg.description
+            )
+        )
 
     # Weekly pulse: for the current week if not completed
     if ("weekly_pulse", week) not in completed:
         cfg = SURVEY_CONFIGS["weekly_pulse"]
-        pending.append(PendingSurvey(
-            survey_type="weekly_pulse", title=cfg.title,
-            description=cfg.description, week_number=week,
-        ))
+        pending.append(
+            PendingSurvey(
+                survey_type="weekly_pulse",
+                title=cfg.title,
+                description=cfg.description,
+                week_number=week,
+            )
+        )
 
     # Midpoint: after week 3
-    if week >= 3 and ("midpoint", None) not in completed and ("midpoint", 0) not in completed:
+    if (
+        week >= 3
+        and ("midpoint", None) not in completed
+        and ("midpoint", 0) not in completed
+    ):
         cfg = SURVEY_CONFIGS["midpoint"]
-        pending.append(PendingSurvey(survey_type="midpoint", title=cfg.title, description=cfg.description))
+        pending.append(
+            PendingSurvey(
+                survey_type="midpoint", title=cfg.title, description=cfg.description
+            )
+        )
 
     # Endline: after week 6
-    if week >= 6 and ("endline", None) not in completed and ("endline", 0) not in completed:
+    if (
+        week >= 6
+        and ("endline", None) not in completed
+        and ("endline", 0) not in completed
+    ):
         cfg = SURVEY_CONFIGS["endline"]
-        pending.append(PendingSurvey(survey_type="endline", title=cfg.title, description=cfg.description))
+        pending.append(
+            PendingSurvey(
+                survey_type="endline", title=cfg.title, description=cfg.description
+            )
+        )
 
     return pending
 
@@ -85,12 +111,16 @@ async def submit_survey(
 ):
     """Submit a completed survey."""
     if request.survey_type not in SURVEY_CONFIGS:
-        raise HTTPException(status_code=400, detail=f"Unknown survey type: {request.survey_type}")
+        raise HTTPException(
+            status_code=400, detail=f"Unknown survey type: {request.survey_type}"
+        )
 
     try:
         survey_type_enum = SurveyType(request.survey_type)
     except ValueError:
-        raise HTTPException(status_code=400, detail=f"Invalid survey type: {request.survey_type}")
+        raise HTTPException(
+            status_code=400, detail=f"Invalid survey type: {request.survey_type}"
+        )
 
     survey = Survey(
         participant_id=participant.id,

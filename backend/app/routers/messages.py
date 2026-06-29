@@ -129,9 +129,13 @@ async def send_message(
     )
     conversation = result.scalar_one_or_none()
     if conversation is None:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Conversation not found")
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Conversation not found"
+        )
     if conversation.participant_id != participant.id:
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Access denied")
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN, detail="Access denied"
+        )
 
     user_msg, assistant_msg = await _process_message(
         conversation=conversation,
@@ -171,24 +175,33 @@ async def send_message_stream(
         raise HTTPException(status_code=403, detail="Access denied")
 
     # Idempotency check
-    existing = await db.execute(select(Message).where(Message.client_id == request.client_id))
+    existing = await db.execute(
+        select(Message).where(Message.client_id == request.client_id)
+    )
     if existing.scalar_one_or_none():
         raise HTTPException(status_code=409, detail="Message already sent")
 
     # Save user message
     now = datetime.now(timezone.utc)
     user_msg = Message(
-        conversation_id=conversation.id, role=MessageRole.user, content=request.content,
-        input_method=InputMethod(request.input_method), client_id=request.client_id,
-        audio_file_url=request.audio_url, sync_status=SyncStatus.synced,
-        created_at=now, sent_at=now,
+        conversation_id=conversation.id,
+        role=MessageRole.user,
+        content=request.content,
+        input_method=InputMethod(request.input_method),
+        client_id=request.client_id,
+        audio_file_url=request.audio_url,
+        sync_status=SyncStatus.synced,
+        created_at=now,
+        sent_at=now,
     )
     db.add(user_msg)
     await db.flush()
 
     # Load history
     result = await db.execute(
-        select(Message).where(Message.conversation_id == conversation.id).order_by(Message.created_at)
+        select(Message)
+        .where(Message.conversation_id == conversation.id)
+        .order_by(Message.created_at)
     )
     all_messages = list(result.scalars().all())
 
@@ -196,7 +209,9 @@ async def send_message_stream(
         full_text = ""
         token_usage = {}
         try:
-            async for chunk, usage in claude_service.stream_response(participant, conversation, all_messages):
+            async for chunk, usage in claude_service.stream_response(
+                participant, conversation, all_messages
+            ):
                 if usage is not None:
                     full_text = chunk
                     token_usage = usage
@@ -204,6 +219,7 @@ async def send_message_stream(
                     yield f"data: {json.dumps({'t': chunk})}\n\n"
         except Exception as e:
             import logging
+
             logging.getLogger(__name__).error(f"Stream generate error: {e}")
             if not full_text:
                 full_text = "Sorry, I encountered an error. Please try again."
@@ -211,8 +227,12 @@ async def send_message_stream(
 
         # Save assistant message
         assistant_msg = Message(
-            conversation_id=conversation.id, role=MessageRole.assistant, content=full_text,
-            token_usage=token_usage, sync_status=SyncStatus.synced, sent_at=datetime.now(timezone.utc),
+            conversation_id=conversation.id,
+            role=MessageRole.assistant,
+            content=full_text,
+            token_usage=token_usage,
+            sync_status=SyncStatus.synced,
+            sent_at=datetime.now(timezone.utc),
         )
         db.add(assistant_msg)
 
@@ -256,11 +276,13 @@ async def sync_messages(
         )
         conversation = conv_result.scalar_one_or_none()
         if conversation is None or conversation.participant_id != participant.id:
-            results.append(SyncResultItem(
-                client_id=item.client_id,
-                status="error",
-                error="Conversation not found or access denied",
-            ))
+            results.append(
+                SyncResultItem(
+                    client_id=item.client_id,
+                    status="error",
+                    error="Conversation not found or access denied",
+                )
+            )
             continue
 
         try:
@@ -275,18 +297,22 @@ async def sync_messages(
             )
             await db.flush()
 
-            results.append(SyncResultItem(
-                client_id=item.client_id,
-                user_message=MessageResponse.model_validate(user_msg),
-                assistant_message=MessageResponse.model_validate(assistant_msg),
-                status="synced",
-            ))
+            results.append(
+                SyncResultItem(
+                    client_id=item.client_id,
+                    user_message=MessageResponse.model_validate(user_msg),
+                    assistant_message=MessageResponse.model_validate(assistant_msg),
+                    status="synced",
+                )
+            )
         except Exception as e:
-            results.append(SyncResultItem(
-                client_id=item.client_id,
-                status="error",
-                error=str(e),
-            ))
+            results.append(
+                SyncResultItem(
+                    client_id=item.client_id,
+                    status="error",
+                    error=str(e),
+                )
+            )
 
     await db.commit()
     return SyncMessagesResponse(results=results)

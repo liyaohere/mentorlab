@@ -18,6 +18,7 @@ import httpx
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
 from dotenv import load_dotenv
+
 load_dotenv(Path(__file__).parent.parent / ".env")
 
 PROFILES_PATH = Path(__file__).parent / "simulation_results" / "profiles.json"
@@ -91,8 +92,9 @@ Return ONLY the JSON array, no other text.
 
 async def generate_supplement():
     import anthropic
+
     client = anthropic.AsyncAnthropic(timeout=httpx.Timeout(600.0, connect=10.0))
-    model = "claude-opus-4-20250514"
+    model = "claude-opus-4"
 
     # Load existing profiles to avoid repetition
     with open(PROFILES_PATH) as f:
@@ -100,7 +102,7 @@ async def generate_supplement():
     print(f"Loaded {len(existing)} existing profiles")
 
     existing_summary = "\n".join(
-        f"- {p['id']}: {p['industry_vertical']}, {p.get('location','')}, challenge: {p['intake_responses']['main_challenge'][:80]}..."
+        f"- {p['id']}: {p['industry_vertical']}, {p.get('location', '')}, challenge: {p['intake_responses']['main_challenge'][:80]}..."
         for p in existing[-20:]
     )
 
@@ -142,10 +144,10 @@ async def generate_supplement():
             batch = json.loads(text)
         except json.JSONDecodeError as e:
             print(f"  WARNING: JSON parse error, salvaging...")
-            truncated = text[:e.pos].rstrip().rstrip(",")
+            truncated = text[: e.pos].rstrip().rstrip(",")
             last_brace = truncated.rfind("}")
             if last_brace > 0:
-                salvaged = truncated[:last_brace + 1] + "]"
+                salvaged = truncated[: last_brace + 1] + "]"
                 if not salvaged.startswith("["):
                     salvaged = "[" + salvaged
                 batch = json.loads(salvaged)
@@ -153,7 +155,9 @@ async def generate_supplement():
                 raise
 
         new_profiles.extend(batch)
-        print(f"  Got {len(batch)} profiles ({response.usage.input_tokens} in / {response.usage.output_tokens} out)")
+        print(
+            f"  Got {len(batch)} profiles ({response.usage.input_tokens} in / {response.usage.output_tokens} out)"
+        )
 
     # Append to existing
     all_profiles = existing + new_profiles
@@ -166,7 +170,9 @@ async def generate_supplement():
         v = p.get("industry_vertical", "unknown")
         industries[v] = industries.get(v, 0) + 1
 
-    print(f"\nGenerated {len(new_profiles)} new profiles (P076-P{75+len(new_profiles):03d})")
+    print(
+        f"\nGenerated {len(new_profiles)} new profiles (P076-P{75 + len(new_profiles):03d})"
+    )
     print(f"Industry distribution: {dict(sorted(industries.items()))}")
     print(f"Total profiles now: {len(all_profiles)}")
     print(f"Saved to {PROFILES_PATH}")

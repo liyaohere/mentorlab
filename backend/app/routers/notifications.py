@@ -23,6 +23,7 @@ router = APIRouter(prefix="/api/v1", tags=["notifications"])
 
 # --- Participant-facing endpoints ---
 
+
 @router.post("/notifications/{notification_id}/delivered")
 async def mark_delivered(
     notification_id: uuid.UUID,
@@ -63,10 +64,11 @@ async def mark_opened(
 
 # --- Admin endpoints for scheduler ---
 
+
 class ScheduleConfig(BaseModel):
     cohort_id: str
     day_of_week: str = "mon"  # mon, tue, wed, thu, fri, sat, sun
-    hour: int = 6             # UTC hour (6 UTC = 9 AM EAT)
+    hour: int = 6  # UTC hour (6 UTC = 9 AM EAT)
     minute: int = 0
     timezone: str = "UTC"
 

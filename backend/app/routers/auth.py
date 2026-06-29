@@ -12,7 +12,15 @@ from app.models.participant import InviteCode, Participant, ParticipantStatus
 import hashlib
 import secrets
 
-from app.schemas.auth import AuthResponse, ConsentRequest, LoginRequest, ParticipantResponse, RegisterRequest, RequestCodeRequest, VerifyCodeRequest
+from app.schemas.auth import (
+    AuthResponse,
+    ConsentRequest,
+    LoginRequest,
+    ParticipantResponse,
+    RegisterRequest,
+    RequestCodeRequest,
+    VerifyCodeRequest,
+)
 
 
 def hash_password(password: str) -> str:
@@ -28,6 +36,7 @@ def verify_password(password: str, stored: str) -> bool:
     check = hashlib.pbkdf2_hmac("sha256", password.encode(), salt.encode(), 100_000)
     return secrets.compare_digest(check.hex(), h)
 
+
 router = APIRouter(prefix="/api/v1/auth", tags=["auth"])
 
 
@@ -39,7 +48,9 @@ def create_access_token(participant: Participant) -> str:
         "cohort": participant.cohort_id or "",
         "exp": expire,
     }
-    return jwt.encode(payload, settings.JWT_SECRET_KEY, algorithm=settings.JWT_ALGORITHM)
+    return jwt.encode(
+        payload, settings.JWT_SECRET_KEY, algorithm=settings.JWT_ALGORITHM
+    )
 
 
 @router.post("/register", response_model=AuthResponse)
@@ -75,7 +86,9 @@ async def register(request: RegisterRequest, db: AsyncSession = Depends(get_db))
                 status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
                 detail="No invite codes available. Please contact the research team.",
             )
-    elif invite.used and not (invite.code.startswith("DEMO") or invite.code.startswith("TEST")):
+    elif invite.used and not (
+        invite.code.startswith("DEMO") or invite.code.startswith("TEST")
+    ):
         # Non-reusable code already used — auto-assign
         result = await db.execute(
             select(InviteCode).where(InviteCode.used == False).limit(1)
@@ -91,6 +104,7 @@ async def register(request: RegisterRequest, db: AsyncSession = Depends(get_db))
     participant_code = invite.code
     if invite.code.startswith("DEMO") or invite.code.startswith("TEST"):
         import secrets
+
         participant_code = f"{invite.code}_{secrets.token_hex(3)}"
         # Don't mark demo codes as used — they stay reusable
     else:
@@ -134,9 +148,16 @@ async def login(request: LoginRequest, db: AsyncSession = Depends(get_db)):
     )
     participant = result.scalar_one_or_none()
     if participant is None:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="No account found with this phone number")
-    if not participant.password_hash or not verify_password(request.password, participant.password_hash):
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Incorrect password")
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="No account found with this phone number",
+        )
+    if not participant.password_hash or not verify_password(
+        request.password, participant.password_hash
+    ):
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED, detail="Incorrect password"
+        )
     token = create_access_token(participant)
     return AuthResponse(
         participant_id=participant.id,
@@ -149,19 +170,26 @@ async def login(request: LoginRequest, db: AsyncSession = Depends(get_db)):
 async def request_code(request: RequestCodeRequest, db: AsyncSession = Depends(get_db)):
     """Send a verification code to the user's phone (for password reset or passwordless login)."""
     import random
+
     result = await db.execute(
         select(Participant).where(Participant.phone_number == request.phone_number)
     )
     participant = result.scalar_one_or_none()
     if participant is None:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="No account found with this phone number")
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="No account found with this phone number",
+        )
     code = f"{random.randint(0, 999999):06d}"
     participant.otp_code = code
     participant.otp_expires = datetime.now(timezone.utc) + timedelta(minutes=10)
     await db.commit()
     # TODO: Send code via SMS (Twilio/Africa's Talking) in production
     # For development, return the code in the response
-    return {"message": f"Verification code sent to {request.phone_number}", "dev_code": code}
+    return {
+        "message": f"Verification code sent to {request.phone_number}",
+        "dev_code": code,
+    }
 
 
 @router.post("/verify-code", response_model=AuthResponse)
@@ -172,11 +200,17 @@ async def verify_code(request: VerifyCodeRequest, db: AsyncSession = Depends(get
     )
     participant = result.scalar_one_or_none()
     if participant is None:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="No account found")
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="No account found"
+        )
     if not participant.otp_code or participant.otp_code != request.code:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid code")
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid code"
+        )
     if participant.otp_expires and participant.otp_expires < datetime.now(timezone.utc):
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Code expired")
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED, detail="Code expired"
+        )
     # Clear OTP
     participant.otp_code = None
     participant.otp_expires = None
@@ -214,7 +248,16 @@ async def update_profile(
     participant: Participant = Depends(get_current_participant),
     db: AsyncSession = Depends(get_db),
 ):
-    allowed_fields = {"name", "phone_number", "venture_name", "venture_description", "industry_vertical", "language_preference", "fcm_token", "app_version"}
+    allowed_fields = {
+        "name",
+        "phone_number",
+        "venture_name",
+        "venture_description",
+        "industry_vertical",
+        "language_preference",
+        "fcm_token",
+        "app_version",
+    }
     for field, value in updates.items():
         if field in allowed_fields:
             setattr(participant, field, value)

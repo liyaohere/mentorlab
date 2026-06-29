@@ -45,13 +45,15 @@ class ClaudeService:
             self._prompt_cache[path] = full_path.read_text()
         return self._prompt_cache[path]
 
-    def _build_participant_context(self, participant: Participant, conversation: Conversation) -> str:
+    def _build_participant_context(
+        self, participant: Participant, conversation: Conversation
+    ) -> str:
         ctx = f"""## About This Entrepreneur
 - Name: {participant.name}
-- Venture: {participant.venture_name or 'Not specified'}
-- Description: {participant.venture_description or 'Not specified'}
-- Industry: {participant.industry_vertical or 'Not specified'}
-- Preferred language: {participant.language_preference or 'english'}
+- Venture: {participant.venture_name or "Not specified"}
+- Description: {participant.venture_description or "Not specified"}
+- Industry: {participant.industry_vertical or "Not specified"}
+- Preferred language: {participant.language_preference or "english"}
 - Week: {conversation.week_number or 1} of the program"""
 
         if participant.memory_notes:
@@ -113,8 +115,11 @@ The following are key facts, preferences, and context you have learned about thi
         # Limit to last MAX_HISTORY_MESSAGES
         return formatted[-MAX_HISTORY_MESSAGES:]
 
-    async def _call_anthropic(self, system_prompt: str, messages: list[dict]) -> tuple[str, dict]:
+    async def _call_anthropic(
+        self, system_prompt: str, messages: list[dict]
+    ) -> tuple[str, dict]:
         import anthropic
+
         client = anthropic.AsyncAnthropic(api_key=settings.ANTHROPIC_API_KEY)
         try:
             response = await client.messages.create(
@@ -143,12 +148,18 @@ The following are key facts, preferences, and context you have learned about thi
             }
         except anthropic.APIError as e:
             logger.error(f"Anthropic API error: {e}")
-            raise HTTPException(status_code=502, detail="AI service temporarily unavailable.")
+            raise HTTPException(
+                status_code=502, detail="AI service temporarily unavailable."
+            )
 
-    async def _call_openai(self, system_prompt: str, messages: list[dict]) -> tuple[str, dict]:
+    async def _call_openai(
+        self, system_prompt: str, messages: list[dict]
+    ) -> tuple[str, dict]:
         async with httpx.AsyncClient(timeout=30.0) as client:
             try:
-                openai_messages = [{"role": "system", "content": system_prompt}] + messages
+                openai_messages = [
+                    {"role": "system", "content": system_prompt}
+                ] + messages
                 response = await client.post(
                     "https://api.openai.com/v1/chat/completions",
                     headers={"Authorization": f"Bearer {settings.OPENAI_API_KEY}"},
@@ -167,16 +178,24 @@ The following are key facts, preferences, and context you have learned about thi
                 }
                 return text, usage
             except httpx.HTTPStatusError as e:
-                logger.error(f"OpenAI API error: {e.response.status_code} {e.response.text}")
+                logger.error(
+                    f"OpenAI API error: {e.response.status_code} {e.response.text}"
+                )
                 if e.response.status_code == 429:
                     await asyncio.sleep(2)
                     return await self._call_openai(system_prompt, messages)
-                raise HTTPException(status_code=502, detail="AI service temporarily unavailable.")
+                raise HTTPException(
+                    status_code=502, detail="AI service temporarily unavailable."
+                )
             except httpx.RequestError as e:
                 logger.error(f"OpenAI connection error: {e}")
-                raise HTTPException(status_code=502, detail="AI service temporarily unavailable.")
+                raise HTTPException(
+                    status_code=502, detail="AI service temporarily unavailable."
+                )
 
-    async def _call_ai(self, system_prompt: str, messages: list[dict]) -> tuple[str, dict]:
+    async def _call_ai(
+        self, system_prompt: str, messages: list[dict]
+    ) -> tuple[str, dict]:
         """Route to the configured AI provider."""
         if settings.AI_PROVIDER == "openai" or (
             not settings.ANTHROPIC_API_KEY and settings.OPENAI_API_KEY
@@ -229,6 +248,7 @@ The following are key facts, preferences, and context you have learned about thi
                         yield chunk, None
         except Exception as e:
             import traceback
+
             logger.error(f"Streaming error: {e}\n{traceback.format_exc()}")
             if not full_text:
                 full_text = "Sorry, I encountered an error. Please try again."
@@ -237,34 +257,54 @@ The following are key facts, preferences, and context you have learned about thi
 
     async def _stream_anthropic(self, system_prompt: str, messages: list[dict]):
         import anthropic
+
         client = anthropic.AsyncAnthropic(api_key=settings.ANTHROPIC_API_KEY)
         full = ""
         async with client.messages.stream(
-            model=settings.CLAUDE_MODEL, max_tokens=settings.CLAUDE_MAX_TOKENS,
-            system=system_prompt, messages=messages,
+            model=settings.CLAUDE_MODEL,
+            max_tokens=settings.CLAUDE_MAX_TOKENS,
+            system=system_prompt,
+            messages=messages,
         ) as stream:
             async for text in stream.text_stream:
                 full += text
                 yield text, None
             resp = await stream.get_final_message()
-            yield full, {"input_tokens": resp.usage.input_tokens, "output_tokens": resp.usage.output_tokens}
+            yield (
+                full,
+                {
+                    "input_tokens": resp.usage.input_tokens,
+                    "output_tokens": resp.usage.output_tokens,
+                },
+            )
 
     async def _stream_openai(self, system_prompt: str, messages: list[dict]):
         openai_messages = [{"role": "system", "content": system_prompt}] + messages
         full = ""
         async with httpx.AsyncClient(timeout=60.0) as client:
             async with client.stream(
-                "POST", "https://api.openai.com/v1/chat/completions",
+                "POST",
+                "https://api.openai.com/v1/chat/completions",
                 headers={"Authorization": f"Bearer {settings.OPENAI_API_KEY}"},
-                json={"model": settings.OPENAI_CHAT_MODEL, "messages": openai_messages, "max_tokens": settings.CLAUDE_MAX_TOKENS, "stream": True},
+                json={
+                    "model": settings.OPENAI_CHAT_MODEL,
+                    "messages": openai_messages,
+                    "max_tokens": settings.CLAUDE_MAX_TOKENS,
+                    "stream": True,
+                },
             ) as response:
                 response.raise_for_status()
                 async for line in response.aiter_lines():
                     if not line.startswith("data: ") or line == "data: [DONE]":
                         continue
                     import json
+
                     chunk = json.loads(line[6:])
-                    delta = chunk.get("choices", [{}])[0].get("delta", {}).get("content", "")
+                    delta = (
+                        chunk.get("choices", [{}])[0]
+                        .get("delta", {})
+                        .get("content", "")
+                    )
                     if delta:
                         full += delta
                         yield delta, None
@@ -286,7 +326,7 @@ The following are key facts, preferences, and context you have learned about thi
 
         existing_memory = participant.memory_notes or "No prior memory."
 
-        prompt = f"""You are reviewing a mentoring conversation with {participant.name} who runs "{participant.venture_name or 'a business'}".
+        prompt = f"""You are reviewing a mentoring conversation with {participant.name} who runs "{participant.venture_name or "a business"}".
 
 ## Existing Memory Notes
 {existing_memory}
@@ -304,7 +344,13 @@ MEMORY: <updated memory text>"""
 
         text, _ = await self._call_ai(
             prompt,
-            formatted + [{"role": "user", "content": "Please generate the summary and updated memory now."}],
+            formatted
+            + [
+                {
+                    "role": "user",
+                    "content": "Please generate the summary and updated memory now.",
+                }
+            ],
         )
 
         # Parse the response

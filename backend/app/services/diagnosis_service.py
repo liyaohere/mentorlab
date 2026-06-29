@@ -110,7 +110,9 @@ class DiagnosisService:
                 causes.append(cause_text)
 
         if len(causes) < 3:
-            logger.warning(f"Orchestrator returned {len(causes)} causes, expected 3. Raw: {response}")
+            logger.warning(
+                f"Orchestrator returned {len(causes)} causes, expected 3. Raw: {response}"
+            )
             # Pad with empty if needed (will likely fail divergence check)
             while len(causes) < 3:
                 causes.append("Unable to generate additional cause.")
@@ -185,7 +187,9 @@ class DiagnosisService:
         if len(parts) == 3:
             return parts
         # Fallback: return as single list if separator parsing fails
-        logger.warning(f"Summarizer returned {len(parts)} parts, expected 3. Using raw split.")
+        logger.warning(
+            f"Summarizer returned {len(parts)} parts, expected 3. Using raw split."
+        )
         return parts if parts else [response]
 
     async def generate_diagnosis(
@@ -229,7 +233,9 @@ class DiagnosisService:
 
         # C2 and C3: Full sequential pipeline
         # Step 3: Agent B (reads A)
-        diagnosis_b = await self.run_agent(causes[1], intake_summary, [diagnosis_a], agent_index=1)
+        diagnosis_b = await self.run_agent(
+            causes[1], intake_summary, [diagnosis_a], agent_index=1
+        )
 
         # Step 4: Agent C (reads A + B)
         diagnosis_c = await self.run_agent(
@@ -237,25 +243,35 @@ class DiagnosisService:
         )
 
         # Step 5: Divergence check
-        check_result = await self.run_divergence_check(diagnosis_a, diagnosis_b, diagnosis_c)
+        check_result = await self.run_divergence_check(
+            diagnosis_a, diagnosis_b, diagnosis_c
+        )
         logger.info(f"Divergence check for {participant.id}: {check_result}")
 
         if check_result.startswith("FAIL") and MAX_RETRY_ATTEMPTS > 0:
             # Retry once from orchestrator
             logger.warning(f"Divergence check failed, retrying. Reason: {check_result}")
             causes = await self.run_orchestrator(intake_summary)
-            diagnosis_a = await self.run_agent(causes[0], intake_summary, [], agent_index=0)
-            diagnosis_b = await self.run_agent(causes[1], intake_summary, [diagnosis_a], agent_index=1)
+            diagnosis_a = await self.run_agent(
+                causes[0], intake_summary, [], agent_index=0
+            )
+            diagnosis_b = await self.run_agent(
+                causes[1], intake_summary, [diagnosis_a], agent_index=1
+            )
             diagnosis_c = await self.run_agent(
                 causes[2], intake_summary, [diagnosis_a, diagnosis_b], agent_index=2
             )
-            check_result = await self.run_divergence_check(diagnosis_a, diagnosis_b, diagnosis_c)
+            check_result = await self.run_divergence_check(
+                diagnosis_a, diagnosis_b, diagnosis_c
+            )
 
         raw_diagnoses = [diagnosis_a, diagnosis_b, diagnosis_c]
 
         if condition == "integrated":
             # C2: Integrate into single recommendation
-            integrated = await self.run_integrator(diagnosis_a, diagnosis_b, diagnosis_c)
+            integrated = await self.run_integrator(
+                diagnosis_a, diagnosis_b, diagnosis_c
+            )
             return {
                 "type": "integrated",
                 "orchestrator_causes": causes,
@@ -266,7 +282,9 @@ class DiagnosisService:
             }
         else:
             # C3: Summarize (compress but preserve disagreement)
-            summarized = await self.run_summarizer(diagnosis_a, diagnosis_b, diagnosis_c)
+            summarized = await self.run_summarizer(
+                diagnosis_a, diagnosis_b, diagnosis_c
+            )
             return {
                 "type": "competing",
                 "orchestrator_causes": causes,

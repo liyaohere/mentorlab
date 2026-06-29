@@ -32,6 +32,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from dotenv import load_dotenv
+
 load_dotenv(Path(__file__).parent.parent / ".env")
 
 from app.services.diagnosis_service import DiagnosisService
@@ -42,8 +43,8 @@ PROFILES_PATH = Path(__file__).parent / "simulation_results" / "profiles.json"
 RESULTS_DIR = Path(__file__).parent / "simulation_results"
 
 MODEL_MAP = {
-    "sonnet": "claude-sonnet-4-20250514",
-    "opus": "claude-opus-4-20250514",
+    "sonnet": "claude-sonnet-4",
+    "opus": "claude-opus-4",
     "gpt4o": "gpt-4o",
     "gpt4o-mini": "gpt-4o-mini",
 }
@@ -54,13 +55,25 @@ NEUTRAL_PROMPT = (
 )
 
 SURVEY_ITEMS = [
-    ("cognitive_load", "How mentally demanding was it to understand the advice you received?"),
+    (
+        "cognitive_load",
+        "How mentally demanding was it to understand the advice you received?",
+    ),
     ("perceived_confusion", "How confused did you feel while reading the advice?"),
     ("trust_in_advice", "How much do you trust the advice you received?"),
     ("confidence", "How confident are you in the cause you identified?"),
-    ("ownership", "How much do you feel the next steps you described are your own idea?"),
-    ("perceived_disagreement", "To what extent did the causes in the advice feel in tension with one another?"),
-    ("perceived_breadth", "To what extent did the advice cover multiple dimensions of your strategic situation?"),
+    (
+        "ownership",
+        "How much do you feel the next steps you described are your own idea?",
+    ),
+    (
+        "perceived_disagreement",
+        "To what extent did the causes in the advice feel in tension with one another?",
+    ),
+    (
+        "perceived_breadth",
+        "To what extent did the advice cover multiple dimensions of your strategic situation?",
+    ),
 ]
 
 # --- Mock Objects ---
@@ -96,9 +109,11 @@ class TokenTracker:
 
         if self.use_anthropic:
             import anthropic
+
             self.client = anthropic.AsyncAnthropic()
         else:
             import openai
+
             self.client = openai.AsyncOpenAI()
 
     async def call_ai(self, system_prompt: str, user_message: str) -> str:
@@ -132,17 +147,19 @@ class TokenTracker:
                     input_tokens = response.usage.prompt_tokens
                     output_tokens = response.usage.completion_tokens
 
-                self.call_log.append({
-                    "input_tokens": input_tokens,
-                    "output_tokens": output_tokens,
-                    "elapsed_seconds": round(elapsed, 2),
-                })
+                self.call_log.append(
+                    {
+                        "input_tokens": input_tokens,
+                        "output_tokens": output_tokens,
+                        "elapsed_seconds": round(elapsed, 2),
+                    }
+                )
 
                 return text
 
             except Exception as e:
                 if "429" in str(e) or "rate_limit" in str(e).lower():
-                    wait = 2 ** attempt + 1
+                    wait = 2**attempt + 1
                     await asyncio.sleep(wait)
                     continue
                 raise
@@ -212,10 +229,7 @@ async def simulate_survey(
         advice_text = diagnosis_shown
         framing = "a single analysis"
 
-    items_text = "\n".join(
-        f'  "{key}": <1-7>  // {desc}'
-        for key, desc in SURVEY_ITEMS
-    )
+    items_text = "\n".join(f'  "{key}": <1-7>  // {desc}' for key, desc in SURVEY_ITEMS)
 
     system_prompt = (
         f"You are {profile['name']}, a Ugandan entrepreneur. "
@@ -369,7 +383,9 @@ async def run_within_subject(
                 run_single(profile, cond, tracker, semaphore, run_id, "within")
             )
 
-    print(f"Running {len(tasks)} within-subject pipeline runs (concurrency={concurrency})...")
+    print(
+        f"Running {len(tasks)} within-subject pipeline runs (concurrency={concurrency})..."
+    )
     results = await asyncio.gather(*tasks, return_exceptions=True)
 
     # Handle exceptions
@@ -409,15 +425,15 @@ async def run_across_subject(
     tasks = []
     for profile, cond in assigned:
         run_id = f"across_{profile['id']}_{cond}"
-        tasks.append(
-            run_single(profile, cond, tracker, semaphore, run_id, "across")
-        )
+        tasks.append(run_single(profile, cond, tracker, semaphore, run_id, "across"))
 
     # Print assignment summary
     cond_counts = {}
     for _, cond in assigned:
         cond_counts[cond] = cond_counts.get(cond, 0) + 1
-    print(f"Running {len(tasks)} across-subject pipeline runs: {cond_counts} (concurrency={concurrency})")
+    print(
+        f"Running {len(tasks)} across-subject pipeline runs: {cond_counts} (concurrency={concurrency})"
+    )
 
     results = await asyncio.gather(*tasks, return_exceptions=True)
 
@@ -436,12 +452,21 @@ async def run_across_subject(
 
 async def main():
     parser = argparse.ArgumentParser(description="MentorLab V2 Simulation")
-    parser.add_argument("--model", choices=["sonnet", "opus", "gpt4o", "gpt4o-mini"], default="gpt4o",
-                        help="Model to use for diagnosis pipeline")
-    parser.add_argument("--test", choices=["within", "across", "both"], default="both",
-                        help="Which test to run")
-    parser.add_argument("--concurrency", type=int, default=10,
-                        help="Max concurrent API calls")
+    parser.add_argument(
+        "--model",
+        choices=["sonnet", "opus", "gpt4o", "gpt4o-mini"],
+        default="gpt4o",
+        help="Model to use for diagnosis pipeline",
+    )
+    parser.add_argument(
+        "--test",
+        choices=["within", "across", "both"],
+        default="both",
+        help="Which test to run",
+    )
+    parser.add_argument(
+        "--concurrency", type=int, default=10, help="Max concurrent API calls"
+    )
     args = parser.parse_args()
 
     model = MODEL_MAP[args.model]
@@ -470,7 +495,9 @@ async def main():
 
     # Run tests
     if args.test in ("within", "both"):
-        print(f"\n--- Test A: Within-Subject (15 profiles x 3 conditions = 45 runs) ---")
+        print(
+            f"\n--- Test A: Within-Subject (15 profiles x 3 conditions = 45 runs) ---"
+        )
         within_results = await run_within_subject(profiles, tracker, args.concurrency)
         all_results.extend(within_results)
 
@@ -499,7 +526,9 @@ async def main():
         run_num = 1
 
     date_str = datetime.now(timezone.utc).strftime("%Y%m%d")
-    output_file = runs_dir / f"run{run_num:03d}_{date_str}_{args.model}_{args.test}.jsonl"
+    output_file = (
+        runs_dir / f"run{run_num:03d}_{date_str}_{args.model}_{args.test}.jsonl"
+    )
     with open(output_file, "w") as f:
         for r in all_results:
             f.write(json.dumps(r) + "\n")

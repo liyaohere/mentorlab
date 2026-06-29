@@ -4,7 +4,9 @@ from pydantic_settings import BaseSettings
 
 class Settings(BaseSettings):
     # Database
-    DATABASE_URL: str = "postgresql+asyncpg://postgres:postgres@localhost:5432/mentorlab"
+    DATABASE_URL: str = (
+        "postgresql+asyncpg://postgres:postgres@localhost:5432/mentorlab"
+    )
 
     # JWT
     JWT_SECRET_KEY: str = "change-me-to-a-random-secret-key"
@@ -16,7 +18,7 @@ class Settings(BaseSettings):
 
     # Anthropic
     ANTHROPIC_API_KEY: str = ""
-    CLAUDE_MODEL: str = "claude-opus-4-20250514"
+    CLAUDE_MODEL: str = "claude-opus-4"
     CLAUDE_MAX_TOKENS: int = 500
 
     # OpenAI (used for Whisper + optionally as AI provider)
@@ -24,7 +26,7 @@ class Settings(BaseSettings):
     OPENAI_CHAT_MODEL: str = "gpt-4o"
 
     # V2 Diagnosis Pipeline
-    DIAGNOSIS_MODEL: str = "claude-opus-4-20250514"
+    DIAGNOSIS_MODEL: str = "claude-opus-4"
     DIAGNOSIS_MAX_TOKENS: int = 300
     OPENAI_TTS_MODEL: str = "tts-1-hd"
     OPENAI_TTS_VOICE: str = "onyx"
@@ -43,7 +45,9 @@ class Settings(BaseSettings):
     FCM_CREDENTIALS_PATH: str = ""
 
     # CORS
-    CORS_ORIGINS: str = '["http://localhost:8081","http://localhost:19006","http://localhost:5173"]'
+    CORS_ORIGINS: str = (
+        '["http://localhost:8081","http://localhost:19006","http://localhost:5173"]'
+    )
 
     @property
     def cors_origins_list(self) -> list[str]:

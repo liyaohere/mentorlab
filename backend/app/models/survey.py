@@ -18,12 +18,14 @@ class SurveyType(str, enum.Enum):
 
 class Survey(Base):
     __tablename__ = "surveys"
-    __table_args__ = (
-        Index("idx_surveys_participant", "participant_id"),
-    )
+    __table_args__ = (Index("idx_surveys_participant", "participant_id"),)
 
-    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    participant_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), ForeignKey("participants.id"), nullable=False)
+    id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), primary_key=True, default=uuid.uuid4
+    )
+    participant_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("participants.id"), nullable=False
+    )
     week_number: Mapped[int | None] = mapped_column(Integer)
     type: Mapped[SurveyType] = mapped_column(Enum(SurveyType), nullable=False)
     responses: Mapped[dict] = mapped_column(JSON, nullable=False, default=dict)

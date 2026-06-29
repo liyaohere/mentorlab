@@ -43,7 +43,13 @@ class WhisperService:
             response = await self.client.post(
                 WHISPER_API_URL,
                 headers={"Authorization": f"Bearer {settings.OPENAI_API_KEY}"},
-                files={"file": (filename, audio_bytes, audio_file.content_type or "audio/m4a")},
+                files={
+                    "file": (
+                        filename,
+                        audio_bytes,
+                        audio_file.content_type or "audio/m4a",
+                    )
+                },
                 data={
                     "model": "whisper-1",
                     "language": "en",  # Hint: English, but handles code-switching
@@ -52,11 +58,15 @@ class WhisperService:
             )
             response.raise_for_status()
             transcript = response.text.strip()
-            logger.info(f"Whisper transcription: {len(audio_bytes)} bytes -> {len(transcript)} chars")
+            logger.info(
+                f"Whisper transcription: {len(audio_bytes)} bytes -> {len(transcript)} chars"
+            )
             return transcript
 
         except httpx.HTTPStatusError as e:
-            logger.error(f"Whisper API error: {e.response.status_code} {e.response.text}")
+            logger.error(
+                f"Whisper API error: {e.response.status_code} {e.response.text}"
+            )
             raise HTTPException(
                 status_code=502,
                 detail="Speech transcription service temporarily unavailable.",

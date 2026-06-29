@@ -19,6 +19,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from dotenv import load_dotenv
+
 load_dotenv(Path(__file__).parent.parent / ".env")
 
 import openai
@@ -111,6 +112,7 @@ async def generate_profiles(count: int = 75, model: str = "gpt-4o") -> list[dict
 
     if use_anthropic:
         import anthropic
+
         client = anthropic.AsyncAnthropic()
     else:
         client = openai.AsyncOpenAI()
@@ -121,7 +123,9 @@ async def generate_profiles(count: int = 75, model: str = "gpt-4o") -> list[dict
     for batch_num in range(0, count, batch_size):
         batch_count = min(batch_size, count - batch_num)
         start_id = batch_num + 1
-        print(f"Generating profiles P{start_id:03d}-P{start_id + batch_count - 1:03d}...")
+        print(
+            f"Generating profiles P{start_id:03d}-P{start_id + batch_count - 1:03d}..."
+        )
 
         prompt = PROFILE_GENERATION_PROMPT.format(count=batch_count)
         # Adjust ID range instruction
@@ -133,7 +137,9 @@ async def generate_profiles(count: int = 75, model: str = "gpt-4o") -> list[dict
                 f"- {p['id']}: {p['industry_vertical']}, challenge: {p['intake_responses']['main_challenge'][:60]}..."
                 for p in all_profiles[-10:]  # last 10 for context
             )
-            prompt += f"\n\nAlready generated (avoid similar challenges):\n{existing_summary}"
+            prompt += (
+                f"\n\nAlready generated (avoid similar challenges):\n{existing_summary}"
+            )
 
         if use_anthropic:
             response = await client.messages.create(
@@ -167,24 +173,30 @@ async def generate_profiles(count: int = 75, model: str = "gpt-4o") -> list[dict
             batch_profiles = json.loads(text)
         except json.JSONDecodeError as e:
             # Try to salvage: find the last complete object
-            print(f"  WARNING: JSON parse error at char {e.pos}, attempting to salvage...")
+            print(
+                f"  WARNING: JSON parse error at char {e.pos}, attempting to salvage..."
+            )
             # Find the last '}' before the error and close the array
-            truncated = text[:e.pos].rstrip().rstrip(",")
+            truncated = text[: e.pos].rstrip().rstrip(",")
             # Find last complete object
             last_brace = truncated.rfind("}")
             if last_brace > 0:
-                salvaged = truncated[:last_brace + 1] + "]"
+                salvaged = truncated[: last_brace + 1] + "]"
                 if not salvaged.startswith("["):
                     salvaged = "[" + salvaged
                 batch_profiles = json.loads(salvaged)
-                print(f"  Salvaged {len(batch_profiles)} profiles from truncated output")
+                print(
+                    f"  Salvaged {len(batch_profiles)} profiles from truncated output"
+                )
             else:
                 raise
 
         all_profiles.extend(batch_profiles)
 
-        print(f"  Batch {batch_num // batch_size + 1}: {len(batch_profiles)} profiles, "
-              f"{tokens_in} input / {tokens_out} output tokens")
+        print(
+            f"  Batch {batch_num // batch_size + 1}: {len(batch_profiles)} profiles, "
+            f"{tokens_in} input / {tokens_out} output tokens"
+        )
 
     return all_profiles
 
@@ -195,7 +207,7 @@ async def main():
     # Use Anthropic if key is available, otherwise OpenAI
     anthropic_key = os.environ.get("ANTHROPIC_API_KEY", "")
     if anthropic_key:
-        model = "claude-opus-4-20250514"
+        model = "claude-opus-4"
     else:
         model = "gpt-4o"
 

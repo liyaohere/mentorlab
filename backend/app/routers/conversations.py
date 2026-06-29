@@ -69,7 +69,9 @@ async def list_conversations(
     return ConversationListResponse(conversations=response_items)
 
 
-@router.post("", response_model=ConversationDetailResponse, status_code=status.HTTP_201_CREATED)
+@router.post(
+    "", response_model=ConversationDetailResponse, status_code=status.HTTP_201_CREATED
+)
 async def create_conversation(
     participant: Participant = Depends(get_current_participant),
     db: AsyncSession = Depends(get_db),
@@ -79,16 +81,23 @@ async def create_conversation(
     # Summarize unsummarized past conversations and update participant memory
     result = await db.execute(
         select(Conversation)
-        .where(Conversation.participant_id == participant.id, Conversation.summary.is_(None))
+        .where(
+            Conversation.participant_id == participant.id,
+            Conversation.summary.is_(None),
+        )
         .options(selectinload(Conversation.messages))
         .order_by(Conversation.created_at)
     )
     unsummarized = result.scalars().all()
     for conv in unsummarized:
-        if len(conv.messages) >= 2:  # Only summarize conversations with actual exchanges
+        if (
+            len(conv.messages) >= 2
+        ):  # Only summarize conversations with actual exchanges
             try:
                 summary, updated_memory = await claude_service.summarize_conversation(
-                    participant, conv, conv.messages,
+                    participant,
+                    conv,
+                    conv.messages,
                 )
                 conv.summary = summary
                 participant.memory_notes = updated_memory
@@ -106,7 +115,9 @@ async def create_conversation(
     await db.flush()
 
     # Generate AI greeting (now includes memory from past conversations)
-    greeting_text, token_usage = await claude_service.get_greeting(participant, conversation)
+    greeting_text, token_usage = await claude_service.get_greeting(
+        participant, conversation
+    )
 
     greeting_msg = Message(
         conversation_id=conversation.id,
@@ -147,9 +158,13 @@ async def get_conversation(
     conversation = result.scalar_one_or_none()
 
     if conversation is None:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Conversation not found")
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Conversation not found"
+        )
     if conversation.participant_id != participant.id:
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Access denied")
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN, detail="Access denied"
+        )
 
     messages = [MessageResponse.model_validate(msg) for msg in conversation.messages]
 

@@ -138,7 +138,9 @@ async def start_interview(
     """Start a new v2 interview session."""
     # Auto-set condition from arm if not already set
     if not participant.condition and participant.arm:
-        participant.condition = ARM_TO_CONDITION.get(participant.arm.value, ConditionType.single)
+        participant.condition = ARM_TO_CONDITION.get(
+            participant.arm.value, ConditionType.single
+        )
         await db.flush()
 
     conversation = Conversation(
@@ -172,7 +174,10 @@ async def submit_intake_answer(
     """Submit an answer to the current intake question."""
     conversation = await _get_conversation(conversation_id, participant.id, db)
 
-    if conversation.status not in (ConversationStatus.intake, ConversationStatus.baseline):
+    if conversation.status not in (
+        ConversationStatus.intake,
+        ConversationStatus.baseline,
+    ):
         raise HTTPException(status_code=400, detail="Interview is not in intake phase")
 
     # Store the answer — must create new dict for SQLAlchemy JSON mutation detection
@@ -236,12 +241,15 @@ async def generate_diagnosis(
     conversation.diagnosis_raw = result["raw_diagnoses"]
     conversation.diagnosis_integrated = result.get("integrated")
     conversation.diagnosis_shown = (
-        result["shown"] if isinstance(result["shown"], str)
+        result["shown"]
+        if isinstance(result["shown"], str)
         else "\n---\n".join(result["shown"])
     )
     # Store just PASS/FAIL (column is VARCHAR(10)); full message is in server logs
     dc = result.get("divergence_check") or ""
-    conversation.divergence_check = "PASS" if dc.startswith("PASS") else "FAIL" if dc else None
+    conversation.divergence_check = (
+        "PASS" if dc.startswith("PASS") else "FAIL" if dc else None
+    )
     conversation.status = ConversationStatus.diagnosis
 
     await db.commit()
@@ -263,7 +271,9 @@ async def generate_diagnosis(
         )
     else:  # competing
         # Use summarized (shortened) versions for display; raw_diagnoses stored in DB
-        shown = result["shown"] if isinstance(result["shown"], list) else [result["shown"]]
+        shown = (
+            result["shown"] if isinstance(result["shown"], list) else [result["shown"]]
+        )
         return DiagnosisResponse(
             type="competing",
             diagnoses=shown,
@@ -341,7 +351,9 @@ async def get_transcript(
     return {
         "intake": conversation.intake_responses,
         "baseline": conversation.baseline_responses,
-        "diagnosis_type": "competing" if conversation.diagnosis_raw and len(conversation.diagnosis_raw) == 3 else "single",
+        "diagnosis_type": "competing"
+        if conversation.diagnosis_raw and len(conversation.diagnosis_raw) == 3
+        else "single",
         "diagnoses": conversation.diagnosis_raw,
         "integrated": conversation.diagnosis_integrated,
         "selection_choice": conversation.selection_choice,
@@ -382,17 +394,19 @@ async def list_sessions(
         if not condition and p and p.arm:
             condition = ARM_TO_CONDITION.get(p.arm.value, ConditionType.single).value
 
-        sessions.append({
-            "id": str(c.id),
-            "participant": p.name if p else "Unknown",
-            "condition": condition,
-            "status": c.status.value,
-            "created_at": c.created_at.isoformat() if c.created_at else None,
-            "has_diagnoses": c.diagnosis_raw is not None,
-            "has_response": c.response_text is not None,
-            "selection_choice": c.selection_choice,
-            "survey_complete": c.cognitive_load_score is not None,
-        })
+        sessions.append(
+            {
+                "id": str(c.id),
+                "participant": p.name if p else "Unknown",
+                "condition": condition,
+                "status": c.status.value,
+                "created_at": c.created_at.isoformat() if c.created_at else None,
+                "has_diagnoses": c.diagnosis_raw is not None,
+                "has_response": c.response_text is not None,
+                "selection_choice": c.selection_choice,
+                "survey_complete": c.cognitive_load_score is not None,
+            }
+        )
 
     return {"sessions": sessions}
 

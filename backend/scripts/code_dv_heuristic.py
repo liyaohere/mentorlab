@@ -14,20 +14,21 @@ from collections import Counter
 
 # ── Text feature extractors ──────────────────────────────────────────
 
+
 def count_causes(text: str) -> int:
     """Count nonredundant causal claims. Looks for distinct cause-indicating segments."""
     # Split into sentences
-    sentences = re.split(r'[.!?]+', text)
+    sentences = re.split(r"[.!?]+", text)
     sentences = [s.strip() for s in sentences if len(s.strip()) > 10]
 
     cause_indicators = [
-        r'\b(?:the (?:biggest|most important|main|pressing|key|core|real) (?:problem|issue|challenge))',
-        r'\b(?:because|due to|caused by|stems from|result of|driven by)',
-        r'\b(?:another (?:issue|problem|challenge|factor))',
-        r'\b(?:also (?:need|important|crucial|affects?))',
-        r'\b(?:additionally|furthermore|moreover|on top of)',
-        r'\b(?:both .+ and)',
-        r'\b(?:not only .+ but)',
+        r"\b(?:the (?:biggest|most important|main|pressing|key|core|real) (?:problem|issue|challenge))",
+        r"\b(?:because|due to|caused by|stems from|result of|driven by)",
+        r"\b(?:another (?:issue|problem|challenge|factor))",
+        r"\b(?:also (?:need|important|crucial|affects?))",
+        r"\b(?:additionally|furthermore|moreover|on top of)",
+        r"\b(?:both .+ and)",
+        r"\b(?:not only .+ but)",
     ]
 
     # Count sentences with causal content
@@ -40,12 +41,12 @@ def count_causes(text: str) -> int:
 
     # Also count distinct problem topics using keyword clustering
     problem_words = re.findall(
-        r'\b(cash flow|credit|supply|demand|competition|marketing|location|'
-        r'price|cost|quality|transport|waste|power|internet|training|staff|'
-        r'rain|weather|season|customer|inventory|supplier|delivery|fund|capital|'
-        r'infrastructure|reputation|visibility|regulation|skill|technology|'
-        r'shelf life|storage|spoilage|foot traffic|online|branding)\b',
-        text.lower()
+        r"\b(cash flow|credit|supply|demand|competition|marketing|location|"
+        r"price|cost|quality|transport|waste|power|internet|training|staff|"
+        r"rain|weather|season|customer|inventory|supplier|delivery|fund|capital|"
+        r"infrastructure|reputation|visibility|regulation|skill|technology|"
+        r"shelf life|storage|spoilage|foot traffic|online|branding)\b",
+        text.lower(),
     )
     distinct_topics = len(set(problem_words))
 
@@ -59,20 +60,48 @@ def causal_evaluation_score(text: str) -> float:
 
     # Comparison/evaluation markers
     comparison_words = [
-        'however', 'but', 'although', 'while', 'whereas',
-        'on the other hand', 'alternatively', 'instead',
-        'more important', 'most pressing', 'seems to be',
-        'i think', 'i believe', 'i agree', 'i realize',
-        'weighing', 'considering', 'balancing',
+        "however",
+        "but",
+        "although",
+        "while",
+        "whereas",
+        "on the other hand",
+        "alternatively",
+        "instead",
+        "more important",
+        "most pressing",
+        "seems to be",
+        "i think",
+        "i believe",
+        "i agree",
+        "i realize",
+        "weighing",
+        "considering",
+        "balancing",
     ]
     hedge_words = [
-        'seems', 'appears', 'might', 'could be', 'likely',
-        'probably', 'perhaps', 'may be',
+        "seems",
+        "appears",
+        "might",
+        "could be",
+        "likely",
+        "probably",
+        "perhaps",
+        "may be",
     ]
     multi_cause = [
-        'both', 'combination', 'multiple', 'several',
-        'not only', 'as well as', 'in addition', 'alongside',
-        'also need', 'also important', 'dual', 'twofold',
+        "both",
+        "combination",
+        "multiple",
+        "several",
+        "not only",
+        "as well as",
+        "in addition",
+        "alongside",
+        "also need",
+        "also important",
+        "dual",
+        "twofold",
     ]
 
     comparison_count = sum(1 for w in comparison_words if w in text_lower)
@@ -94,16 +123,20 @@ def cause_clarity_score(text: str) -> float:
 
     # Cause-identification markers
     cause_markers = [
-        'the (?:biggest|most important|main|core|key|real|pressing) (?:problem|issue|challenge)',
-        'the (?:problem|issue|challenge) is',
-        'because', 'due to', 'stems from', 'caused by',
-        'root cause', 'underlying',
+        "the (?:biggest|most important|main|core|key|real|pressing) (?:problem|issue|challenge)",
+        "the (?:problem|issue|challenge) is",
+        "because",
+        "due to",
+        "stems from",
+        "caused by",
+        "root cause",
+        "underlying",
     ]
     specificity_markers = [
         # References to specific business elements
-        r'\b(?:my|our|the) (?:stall|shop|farm|business|stand|store|center|studio)',
-        r'\b(?:customers?|clients?|suppliers?|competitors?)\b',
-        r'(?:cash flow|credit|inventory|delivery|supply chain)',
+        r"\b(?:my|our|the) (?:stall|shop|farm|business|stand|store|center|studio)",
+        r"\b(?:customers?|clients?|suppliers?|competitors?)\b",
+        r"(?:cash flow|credit|inventory|delivery|supply chain)",
     ]
 
     cause_count = sum(1 for p in cause_markers if re.search(p, text_lower))
@@ -126,18 +159,29 @@ def assumption_score(text: str) -> float:
     text_lower = text.lower()
 
     assumption_markers = [
-        'if ', 'assuming', 'this assumes', 'provided that',
-        'given that', 'as long as', 'depends on',
-        'i think', 'i believe', 'it seems', 'it appears',
-        'might not', 'may not', 'could be wrong',
-        'not sure', 'uncertain',
+        "if ",
+        "assuming",
+        "this assumes",
+        "provided that",
+        "given that",
+        "as long as",
+        "depends on",
+        "i think",
+        "i believe",
+        "it seems",
+        "it appears",
+        "might not",
+        "may not",
+        "could be wrong",
+        "not sure",
+        "uncertain",
     ]
 
     count = sum(1 for m in assumption_markers if m in text_lower)
     score = 1.0 + min(count * 0.6, 3.0)
 
     # Conditional language bonus
-    if re.search(r'\bif\b.*\bthen\b', text_lower):
+    if re.search(r"\bif\b.*\bthen\b", text_lower):
         score += 0.5
 
     return min(round(score, 1), 5.0)
@@ -148,11 +192,24 @@ def evidence_score(text: str) -> float:
     text_lower = text.lower()
 
     evidence_markers = [
-        'test', 'try', 'experiment', 'measure', 'track',
-        'see if', 'see whether', 'check', 'monitor',
-        'find out', 'assess', 'evaluate', 'compare',
-        'survey', 'ask customers', 'feedback',
-        'if this works', 'if it doesn\'t',
+        "test",
+        "try",
+        "experiment",
+        "measure",
+        "track",
+        "see if",
+        "see whether",
+        "check",
+        "monitor",
+        "find out",
+        "assess",
+        "evaluate",
+        "compare",
+        "survey",
+        "ask customers",
+        "feedback",
+        "if this works",
+        "if it doesn't",
     ]
 
     count = sum(1 for m in evidence_markers if m in text_lower)
@@ -167,18 +224,35 @@ def coherence_score(text: str) -> float:
 
     # Action markers
     action_markers = [
-        'my next step', 'i plan to', 'i will', 'i need to',
-        'should be to', 'going to', 'i\'ll', 'i intend',
-        'to tackle this', 'to address this', 'to solve',
-        'my plan', 'the solution',
+        "my next step",
+        "i plan to",
+        "i will",
+        "i need to",
+        "should be to",
+        "going to",
+        "i'll",
+        "i intend",
+        "to tackle this",
+        "to address this",
+        "to solve",
+        "my plan",
+        "the solution",
     ]
 
     # Linking markers (cause → action)
     linking_markers = [
-        'therefore', 'so', 'this means', 'that\'s why',
-        'to address this', 'to tackle this', 'in order to',
-        'this will help', 'this should', 'which will',
-        'by doing this', 'by doing so',
+        "therefore",
+        "so",
+        "this means",
+        "that's why",
+        "to address this",
+        "to tackle this",
+        "in order to",
+        "this will help",
+        "this should",
+        "which will",
+        "by doing this",
+        "by doing so",
     ]
 
     action_count = sum(1 for m in action_markers if m in text_lower)
@@ -197,17 +271,33 @@ def novelty_score(text: str) -> float:
 
     # Generic/obvious phrases (lower novelty)
     generic = [
-        'more customers', 'increase sales', 'reduce costs',
-        'improve quality', 'better marketing', 'save money',
-        'grow my business', 'attract more',
+        "more customers",
+        "increase sales",
+        "reduce costs",
+        "improve quality",
+        "better marketing",
+        "save money",
+        "grow my business",
+        "attract more",
     ]
     # Deeper/non-obvious phrases (higher novelty)
     novel = [
-        'combination of', 'underlying', 'root cause',
-        'not just', 'beyond', 'reframe', 'rethink',
-        'the real issue', 'actually', 'counterintuitive',
-        'perception', 'reputation', 'positioning',
-        'diversif', 'long-term', 'structural',
+        "combination of",
+        "underlying",
+        "root cause",
+        "not just",
+        "beyond",
+        "reframe",
+        "rethink",
+        "the real issue",
+        "actually",
+        "counterintuitive",
+        "perception",
+        "reputation",
+        "positioning",
+        "diversif",
+        "long-term",
+        "structural",
     ]
 
     generic_count = sum(1 for g in generic if g in text_lower)
@@ -222,6 +312,7 @@ def novelty_score(text: str) -> float:
 
 # ── Main ─────────────────────────────────────────────────────────────
 
+
 def main():
     runs_dir = Path(__file__).parent / "simulation_results" / "runs"
     jsonl_file = runs_dir / "run003_20260406_gpt4o_both.jsonl"
@@ -235,9 +326,15 @@ def main():
 
     print(f"Coding {len(across_runs)} across-subject responses (heuristic)...")
 
-    dims = ["cause_clarity", "causal_evaluation", "assumption_identification",
-            "discriminating_evidence", "cause_action_coherence",
-            "comprehensiveness", "novelty"]
+    dims = [
+        "cause_clarity",
+        "causal_evaluation",
+        "assumption_identification",
+        "discriminating_evidence",
+        "cause_action_coherence",
+        "comprehensiveness",
+        "novelty",
+    ]
 
     results = []
     for run in across_runs:
@@ -263,9 +360,9 @@ def main():
         json.dump(results, f, indent=2)
 
     # ── Analysis ──
-    print("\n" + "="*75)
+    print("\n" + "=" * 75)
     print("PROBLEM FORMULATION QUALITY BY CONDITION (heuristic-coded)")
-    print("="*75)
+    print("=" * 75)
 
     for cond in ["single", "integrated", "competing"]:
         cr = [r for r in results if r["condition"] == cond]
@@ -277,9 +374,9 @@ def main():
             print(f"  {dim:30s}: M={m:.2f}  SD={s:.2f}")
 
     # ── Composite ──
-    print("\n" + "="*75)
+    print("\n" + "=" * 75)
     print("COMPOSITE (mean of 5 primary dimensions, excl. comprehensiveness & novelty)")
-    print("="*75)
+    print("=" * 75)
     for cond in ["single", "integrated", "competing"]:
         cr = [r for r in results if r["condition"] == cond]
         composites = [mean([r[d] for d in dims[:5]]) for r in cr]
@@ -288,9 +385,9 @@ def main():
         print(f"  {cond:15s}: M={m:.2f}  SD={s:.2f}")
 
     # ── Statistical tests ──
-    print("\n" + "="*75)
+    print("\n" + "=" * 75)
     print("KRUSKAL-WALLIS + PAIRWISE TESTS")
-    print("="*75)
+    print("=" * 75)
     from scipy.stats import kruskal, mannwhitneyu
 
     for dim in dims + ["composite"]:
@@ -305,50 +402,78 @@ def main():
 
         H, p = kruskal(*groups)
         m1, m2, m3 = mean(groups[0]), mean(groups[1]), mean(groups[2])
-        sig = "***" if p < 0.001 else "**" if p < 0.01 else "*" if p < 0.05 else "†" if p < 0.10 else "ns"
+        sig = (
+            "***"
+            if p < 0.001
+            else "**"
+            if p < 0.01
+            else "*"
+            if p < 0.05
+            else "†"
+            if p < 0.10
+            else "ns"
+        )
 
-        print(f"  {dim:30s}: C1={m1:.2f}  C2={m2:.2f}  C3={m3:.2f}  H={H:.2f}  p={p:.4f} {sig}")
+        print(
+            f"  {dim:30s}: C1={m1:.2f}  C2={m2:.2f}  C3={m3:.2f}  H={H:.2f}  p={p:.4f} {sig}"
+        )
 
         if p < 0.10:
             # H1: C3 > C2
-            U, p32 = mannwhitneyu(groups[2], groups[1], alternative='greater')
+            U, p32 = mannwhitneyu(groups[2], groups[1], alternative="greater")
             # H2: C2 > C1
-            U, p21 = mannwhitneyu(groups[1], groups[0], alternative='greater')
+            U, p21 = mannwhitneyu(groups[1], groups[0], alternative="greater")
             # C3 > C1
-            U, p31 = mannwhitneyu(groups[2], groups[0], alternative='greater')
-            print(f"    H1 (C3>C2): p={p32:.4f}  |  H2 (C2>C1): p={p21:.4f}  |  C3>C1: p={p31:.4f}")
+            U, p31 = mannwhitneyu(groups[2], groups[0], alternative="greater")
+            print(
+                f"    H1 (C3>C2): p={p32:.4f}  |  H2 (C2>C1): p={p21:.4f}  |  C3>C1: p={p31:.4f}"
+            )
 
     # ── Key hypothesis tests summary ──
-    print("\n" + "="*75)
+    print("\n" + "=" * 75)
     print("HYPOTHESIS-LEVEL SUMMARY")
-    print("="*75)
+    print("=" * 75)
 
     # H1: C3 (competing/separate) > C2 (integrated) on formulation quality
-    c2_comp = [mean([r[d] for d in dims[:5]]) for r in results if r["condition"] == "integrated"]
-    c3_comp = [mean([r[d] for d in dims[:5]]) for r in results if r["condition"] == "competing"]
-    c1_comp = [mean([r[d] for d in dims[:5]]) for r in results if r["condition"] == "single"]
+    c2_comp = [
+        mean([r[d] for d in dims[:5]])
+        for r in results
+        if r["condition"] == "integrated"
+    ]
+    c3_comp = [
+        mean([r[d] for d in dims[:5]]) for r in results if r["condition"] == "competing"
+    ]
+    c1_comp = [
+        mean([r[d] for d in dims[:5]]) for r in results if r["condition"] == "single"
+    ]
 
-    U, p_h1 = mannwhitneyu(c3_comp, c2_comp, alternative='greater')
-    print(f"  H1 (preserved > resolved): C3 M={mean(c3_comp):.2f} vs C2 M={mean(c2_comp):.2f}")
+    U, p_h1 = mannwhitneyu(c3_comp, c2_comp, alternative="greater")
+    print(
+        f"  H1 (preserved > resolved): C3 M={mean(c3_comp):.2f} vs C2 M={mean(c2_comp):.2f}"
+    )
     print(f"    Mann-Whitney U={U:.0f}, p={p_h1:.4f} (one-sided)")
 
-    U, p_h2 = mannwhitneyu(c2_comp, c1_comp, alternative='greater')
-    print(f"  H2 (multi-integrated > single): C2 M={mean(c2_comp):.2f} vs C1 M={mean(c1_comp):.2f}")
+    U, p_h2 = mannwhitneyu(c2_comp, c1_comp, alternative="greater")
+    print(
+        f"  H2 (multi-integrated > single): C2 M={mean(c2_comp):.2f} vs C1 M={mean(c1_comp):.2f}"
+    )
     print(f"    Mann-Whitney U={U:.0f}, p={p_h2:.4f} (one-sided)")
 
     # ── Dimension most likely to differ: causal evaluation & comprehensiveness ──
-    print("\n" + "="*75)
+    print("\n" + "=" * 75)
     print("KEY DIMENSIONS (most theoretically relevant)")
-    print("="*75)
+    print("=" * 75)
     for dim in ["causal_evaluation", "comprehensiveness"]:
         g1 = [r[dim] for r in results if r["condition"] == "single"]
         g2 = [r[dim] for r in results if r["condition"] == "integrated"]
         g3 = [r[dim] for r in results if r["condition"] == "competing"]
         H, p = kruskal(g1, g2, g3)
         print(f"\n  {dim}:")
-        print(f"    C1={mean(g1):.2f}  C2={mean(g2):.2f}  C3={mean(g3):.2f}  (H={H:.2f}, p={p:.4f})")
-        U, p32 = mannwhitneyu(g3, g2, alternative='greater')
-        U, p21 = mannwhitneyu(g2, g1, alternative='greater')
+        print(
+            f"    C1={mean(g1):.2f}  C2={mean(g2):.2f}  C3={mean(g3):.2f}  (H={H:.2f}, p={p:.4f})"
+        )
+        U, p32 = mannwhitneyu(g3, g2, alternative="greater")
+        U, p21 = mannwhitneyu(g2, g1, alternative="greater")
         print(f"    H1 (C3>C2): p={p32:.4f}  |  H2 (C2>C1): p={p21:.4f}")
 
 

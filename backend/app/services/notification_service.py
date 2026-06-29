@@ -24,6 +24,7 @@ def _init_firebase():
     try:
         import firebase_admin
         from firebase_admin import credentials
+
         cred = credentials.Certificate(settings.FCM_CREDENTIALS_PATH)
         firebase_admin.initialize_app(cred)
         _firebase_initialized = True
@@ -34,7 +35,6 @@ def _init_firebase():
 
 
 class NotificationService:
-
     async def send_push(
         self,
         participant: Participant,
@@ -54,7 +54,9 @@ class NotificationService:
         db.add(notification)
 
         if not participant.fcm_token:
-            logger.info(f"No FCM token for participant {participant.id} — skipping push")
+            logger.info(
+                f"No FCM token for participant {participant.id} — skipping push"
+            )
             notification.status = NotificationStatus.failed
             await db.flush()
             return notification

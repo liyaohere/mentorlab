@@ -3,6 +3,7 @@
 Admin panel sends `X-Admin-Key: <key>` header with every request.
 The key is set in .env as ADMIN_API_KEY. Simple and secure enough for a research tool.
 """
+
 from fastapi import Depends, HTTPException, Query, Request, Security, status
 from fastapi.security import APIKeyHeader
 

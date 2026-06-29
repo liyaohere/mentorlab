@@ -72,12 +72,22 @@ async def seed_invite_codes():
 @pytest.fixture
 def mock_claude():
     """Mock Claude API to return deterministic responses."""
+
     async def fake_get_response(self, participant, conversation, messages):
         return "This is a test AI response.", {"input_tokens": 100, "output_tokens": 50}
 
     async def fake_get_greeting(self, participant, conversation):
-        return "Welcome! I'm your mentor. How is your venture going this week?", {"input_tokens": 80, "output_tokens": 30}
+        return "Welcome! I'm your mentor. How is your venture going this week?", {
+            "input_tokens": 80,
+            "output_tokens": 30,
+        }
 
-    with patch("app.services.claude_service.ClaudeService.get_response", fake_get_response), \
-         patch("app.services.claude_service.ClaudeService.get_greeting", fake_get_greeting):
+    with (
+        patch(
+            "app.services.claude_service.ClaudeService.get_response", fake_get_response
+        ),
+        patch(
+            "app.services.claude_service.ClaudeService.get_greeting", fake_get_greeting
+        ),
+    ):
         yield

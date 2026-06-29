@@ -29,6 +29,7 @@ router = APIRouter(
 
 # --- Participant Management ---
 
+
 class ParticipantSummary(BaseModel):
     id: uuid.UUID
     name: str
@@ -70,20 +71,22 @@ async def list_participants(
                 )
             )
         )
-        summaries.append({
-            "id": p.id,
-            "name": p.name,
-            "arm": p.arm.value,
-            "status": p.status.value,
-            "venture_name": p.venture_name,
-            "industry_vertical": p.industry_vertical,
-            "cohort_id": p.cohort_id,
-            "invite_code": p.invite_code,
-            "created_at": p.created_at,
-            "consent_at": p.consent_at,
-            "conversation_count": conv_count.scalar() or 0,
-            "message_count": msg_count.scalar() or 0,
-        })
+        summaries.append(
+            {
+                "id": p.id,
+                "name": p.name,
+                "arm": p.arm.value,
+                "status": p.status.value,
+                "venture_name": p.venture_name,
+                "industry_vertical": p.industry_vertical,
+                "cohort_id": p.cohort_id,
+                "invite_code": p.invite_code,
+                "created_at": p.created_at,
+                "consent_at": p.consent_at,
+                "conversation_count": conv_count.scalar() or 0,
+                "message_count": msg_count.scalar() or 0,
+            }
+        )
     return {"participants": summaries}
 
 
@@ -123,14 +126,16 @@ async def upload_participants(
         code = generate_invite_code()
         invite = InviteCode(code=code, arm=arm, cohort_id=cohort or None)
         db.add(invite)
-        created_codes.append({
-            "name": name,
-            "phone": phone,
-            "arm": arm_str,
-            "cohort": cohort,
-            "industry_vertical": industry,
-            "invite_code": code,
-        })
+        created_codes.append(
+            {
+                "name": name,
+                "phone": phone,
+                "arm": arm_str,
+                "cohort": cohort,
+                "industry_vertical": industry,
+                "invite_code": code,
+            }
+        )
 
     await db.commit()
 
@@ -143,9 +148,13 @@ async def upload_participants(
 
 # --- Data Export ---
 
-async def _log_export(db: AsyncSession, export_type: str, cohort_id: str | None, row_count: int):
+
+async def _log_export(
+    db: AsyncSession, export_type: str, cohort_id: str | None, row_count: int
+):
     """Log every export to admin_events for download history."""
     from app.models.admin import AdminEvent
+
     event = AdminEvent(
         action=f"export_{export_type}",
         metadata_={
@@ -184,11 +193,23 @@ async def export_transcripts(
 
     output = io.StringIO()
     writer = csv.writer(output)
-    writer.writerow([
-        "participant_id", "participant_name", "arm", "cohort",
-        "conversation_id", "conversation_number", "week_number", "initiated_by",
-        "message_order", "message_role", "message_content", "input_method", "timestamp",
-    ])
+    writer.writerow(
+        [
+            "participant_id",
+            "participant_name",
+            "arm",
+            "cohort",
+            "conversation_id",
+            "conversation_number",
+            "week_number",
+            "initiated_by",
+            "message_order",
+            "message_role",
+            "message_content",
+            "input_method",
+            "timestamp",
+        ]
+    )
 
     # Track conversation numbering per participant
     participant_conv_counter: dict[str, int] = {}  # participant_id -> next conv number
@@ -212,13 +233,23 @@ async def export_transcripts(
 
         message_order += 1
 
-        writer.writerow([
-            pid, participant.name, participant.arm.value,
-            participant.cohort_id or "",
-            cid, current_conv_number, conv.week_number or "", conv.initiated_by.value,
-            message_order, msg.role.value, msg.content, msg.input_method.value,
-            msg.created_at.isoformat() if msg.created_at else "",
-        ])
+        writer.writerow(
+            [
+                pid,
+                participant.name,
+                participant.arm.value,
+                participant.cohort_id or "",
+                cid,
+                current_conv_number,
+                conv.week_number or "",
+                conv.initiated_by.value,
+                message_order,
+                msg.role.value,
+                msg.content,
+                msg.input_method.value,
+                msg.created_at.isoformat() if msg.created_at else "",
+            ]
+        )
 
     # Log this download
     await _log_export(db, "transcripts", cohort_id, len(rows))
@@ -256,19 +287,32 @@ async def export_surveys(
 
     output = io.StringIO()
     writer = csv.writer(output)
-    writer.writerow([
-        "participant_id", "participant_name", "arm", "cohort",
-        "survey_type", "week_number", "completed_at", "responses_json",
-    ])
+    writer.writerow(
+        [
+            "participant_id",
+            "participant_name",
+            "arm",
+            "cohort",
+            "survey_type",
+            "week_number",
+            "completed_at",
+            "responses_json",
+        ]
+    )
 
     for survey, participant in rows:
-        writer.writerow([
-            str(participant.id), participant.name, participant.arm.value,
-            participant.cohort_id or "",
-            survey.type.value, survey.week_number or "",
-            survey.completed_at.isoformat() if survey.completed_at else "",
-            json.dumps(survey.responses),
-        ])
+        writer.writerow(
+            [
+                str(participant.id),
+                participant.name,
+                participant.arm.value,
+                participant.cohort_id or "",
+                survey.type.value,
+                survey.week_number or "",
+                survey.completed_at.isoformat() if survey.completed_at else "",
+                json.dumps(survey.responses),
+            ]
+        )
 
     # Log this download
     await _log_export(db, "surveys", cohort_id, len(rows))
@@ -289,6 +333,7 @@ async def export_surveys(
 async def get_export_history(db: AsyncSession = Depends(get_db)):
     """Get the history of all data exports (who downloaded what, when)."""
     from app.models.admin import AdminEvent
+
     result = await db.execute(
         select(AdminEvent)
         .where(AdminEvent.action.like("export_%"))
@@ -303,7 +348,9 @@ async def get_export_history(db: AsyncSession = Depends(get_db)):
                 "type": e.metadata_.get("type", "") if e.metadata_ else "",
                 "cohort_id": e.metadata_.get("cohort_id") if e.metadata_ else None,
                 "row_count": e.metadata_.get("row_count", 0) if e.metadata_ else 0,
-                "downloaded_at": e.metadata_.get("timestamp", "") if e.metadata_ else "",
+                "downloaded_at": e.metadata_.get("timestamp", "")
+                if e.metadata_
+                else "",
             }
             for e in events
         ]
@@ -311,6 +358,7 @@ async def get_export_history(db: AsyncSession = Depends(get_db)):
 
 
 # --- Engagement Dashboard ---
+
 
 @router.get("/dashboard")
 async def get_dashboard(
@@ -345,7 +393,10 @@ async def get_dashboard(
     if cohort_id:
         msg_query = msg_query.where(Participant.cohort_id == cohort_id)
     result = await db.execute(msg_query)
-    messages_by_arm = {row[0].value if hasattr(row[0], 'value') else row[0]: row[1] for row in result.all()}
+    messages_by_arm = {
+        row[0].value if hasattr(row[0], "value") else row[0]: row[1]
+        for row in result.all()
+    }
 
     # Voice vs text
     voice_query = (
@@ -358,7 +409,10 @@ async def get_dashboard(
     if cohort_id:
         voice_query = voice_query.where(Participant.cohort_id == cohort_id)
     result = await db.execute(voice_query)
-    input_methods = {row[0].value if hasattr(row[0], 'value') else row[0]: row[1] for row in result.all()}
+    input_methods = {
+        row[0].value if hasattr(row[0], "value") else row[0]: row[1]
+        for row in result.all()
+    }
 
     # Total AI messages (for cost estimate)
     total_msg_result = await db.execute(
@@ -381,31 +435,49 @@ async def get_dashboard(
 
     # Messages today
     from datetime import datetime, timedelta, timezone as tz
-    today_start = datetime.now(tz.utc).replace(hour=0, minute=0, second=0, microsecond=0)
+
+    today_start = datetime.now(tz.utc).replace(
+        hour=0, minute=0, second=0, microsecond=0
+    )
     msgs_today_result = await db.execute(
-        select(func.count(Message.id)).where(Message.role == "user", Message.created_at >= today_start)
+        select(func.count(Message.id)).where(
+            Message.role == "user", Message.created_at >= today_start
+        )
     )
     messages_today = msgs_today_result.scalar() or 0
 
     # Messages this week
     week_start = today_start - timedelta(days=today_start.weekday())
     msgs_week_result = await db.execute(
-        select(func.count(Message.id)).where(Message.role == "user", Message.created_at >= week_start)
+        select(func.count(Message.id)).where(
+            Message.role == "user", Message.created_at >= week_start
+        )
     )
     messages_this_week = msgs_week_result.scalar() or 0
 
     # Recent conversations (last 10)
     recent_result = await db.execute(
         select(
-            Conversation.id, Conversation.title, Conversation.created_at, Conversation.week_number,
-            Participant.name, Participant.arm,
+            Conversation.id,
+            Conversation.title,
+            Conversation.created_at,
+            Conversation.week_number,
+            Participant.name,
+            Participant.arm,
         )
         .join(Participant, Conversation.participant_id == Participant.id)
         .order_by(Conversation.created_at.desc())
         .limit(10)
     )
     recent_conversations = [
-        {"id": str(r[0]), "title": r[1] or "New conversation", "created_at": r[2].isoformat(), "week": r[3], "participant": r[4], "arm": r[5].value}
+        {
+            "id": str(r[0]),
+            "title": r[1] or "New conversation",
+            "created_at": r[2].isoformat(),
+            "week": r[3],
+            "participant": r[4],
+            "arm": r[5].value,
+        }
         for r in recent_result.all()
     ]
 
@@ -444,6 +516,7 @@ async def get_dashboard(
 
 # --- Prompt Management ---
 
+
 class PromptUpdate(BaseModel):
     arm: str  # c1, c2, c3
     content: str
@@ -453,6 +526,7 @@ class PromptUpdate(BaseModel):
 async def get_prompt(arm: str):
     """Get the current system prompt for an arm."""
     from pathlib import Path
+
     arm_files = {
         "c1": "c1_single.md",
         "c2": "c2_integrated.md",
@@ -470,6 +544,7 @@ async def get_prompt(arm: str):
 async def update_prompt(update: PromptUpdate):
     """Update the system prompt for an arm. Logs the change."""
     from pathlib import Path
+
     arm_files = {
         "c1": "c1_single.md",
         "c2": "c2_integrated.md",
@@ -487,6 +562,7 @@ async def update_prompt(update: PromptUpdate):
 
     # Clear prompt cache so changes take effect
     from app.services.claude_service import claude_service
+
     claude_service._prompt_cache.clear()
 
     return {

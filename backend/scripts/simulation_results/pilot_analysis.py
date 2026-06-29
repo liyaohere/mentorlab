@@ -104,6 +104,7 @@ subsets = {"across": [], "within": []}
 for rec in records:
     subsets[rec["test_type"]].append(rec)
 
+
 # ── Main analysis function ──────────────────────────────────────────────
 def analyze_subset(data, label):
     """Run all analyses on a subset of data. Returns dict of results."""
@@ -128,8 +129,10 @@ def analyze_subset(data, label):
         if "result" not in rec or rec.get("result") is None:
             error_ids.append(rec.get("run_id", "unknown"))
     if error_ids:
-        print(f"  NOTE: {len(error_ids)} record(s) have no result and are excluded "
-              f"from content analyses: {error_ids}")
+        print(
+            f"  NOTE: {len(error_ids)} record(s) have no result and are excluded "
+            f"from content analyses: {error_ids}"
+        )
 
     for c in CONDITIONS:
         n = len(by_cond[c])
@@ -140,7 +143,11 @@ def analyze_subset(data, label):
 
     # Helper: filter records that have a valid result
     def has_result(rec):
-        return "result" in rec and rec["result"] is not None and "shown" in rec.get("result", {})
+        return (
+            "result" in rec
+            and rec["result"] is not None
+            and "shown" in rec.get("result", {})
+        )
 
     # ── 2. Word counts of AI output ────────────────────────────────────
     print(f"\n{'─' * 60}")
@@ -149,7 +156,11 @@ def analyze_subset(data, label):
     wc_results = {}
     wc_groups = {}
     for c in CONDITIONS:
-        wcs = [get_shown_word_count(rec["result"]["shown"]) for rec in by_cond[c] if has_result(rec)]
+        wcs = [
+            get_shown_word_count(rec["result"]["shown"])
+            for rec in by_cond[c]
+            if has_result(rec)
+        ]
         wc_groups[c] = wcs
         stats_dict = {
             "mean": fmt(np.mean(wcs)),
@@ -158,17 +169,25 @@ def analyze_subset(data, label):
             "max": fmt(np.max(wcs)),
         }
         wc_results[c] = stats_dict
-        print(f"  {c:12s}: M = {stats_dict['mean']}, SD = {stats_dict['sd']}, "
-              f"range = [{stats_dict['min']}, {stats_dict['max']}]")
+        print(
+            f"  {c:12s}: M = {stats_dict['mean']}, SD = {stats_dict['sd']}, "
+            f"range = [{stats_dict['min']}, {stats_dict['max']}]"
+        )
 
     h, p = kruskal_test([wc_groups[c] for c in CONDITIONS])
     wc_results["kruskal_wallis"] = {"H": h, "p": str(p)}
     print(f"  Kruskal-Wallis: H = {h}, p = {p}")
     # Also pairwise for word counts
     print("  Pairwise Mann-Whitney U:")
-    for c1, c2 in [("single", "integrated"), ("single", "competing"), ("integrated", "competing")]:
+    for c1, c2 in [
+        ("single", "integrated"),
+        ("single", "competing"),
+        ("integrated", "competing"),
+    ]:
         if wc_groups[c1] and wc_groups[c2]:
-            u, pv = stats.mannwhitneyu(wc_groups[c1], wc_groups[c2], alternative="two-sided")
+            u, pv = stats.mannwhitneyu(
+                wc_groups[c1], wc_groups[c2], alternative="two-sided"
+            )
             print(f"    {c1} vs {c2}: U = {u:.1f}, p = {fmt_p(pv)}")
     results["ai_output_word_counts"] = wc_results
 
@@ -179,7 +198,9 @@ def analyze_subset(data, label):
     compliance_results = {}
     for c in CONDITIONS:
         valid_recs = [rec for rec in by_cond[c] if has_result(rec)]
-        compliant = sum(1 for rec in valid_recs if check_format_compliance(rec["result"]["shown"]))
+        compliant = sum(
+            1 for rec in valid_recs if check_format_compliance(rec["result"]["shown"])
+        )
         total = len(valid_recs)
         pct = fmt(100 * compliant / total if total > 0 else 0, 1)
         compliance_results[c] = {"compliant": compliant, "total": total, "pct": pct}
@@ -206,8 +227,10 @@ def analyze_subset(data, label):
             "total": total,
             "pass_rate_pct": pass_rate,
         }
-        print(f"  {c:12s}: PASS = {n_pass}, FAIL = {n_fail}, null = {n_null} "
-              f"→ pass rate = {pass_rate}%")
+        print(
+            f"  {c:12s}: PASS = {n_pass}, FAIL = {n_fail}, null = {n_null} "
+            f"→ pass rate = {pass_rate}%"
+        )
     results["divergence_check"] = div_results
 
     # ── 5. Simulated survey scores ─────────────────────────────────────
@@ -220,8 +243,11 @@ def analyze_subset(data, label):
         groups = []
         print(f"\n  {item}:")
         for c in CONDITIONS:
-            vals = [rec["simulated_survey"][item] for rec in by_cond[c]
-                    if rec.get("simulated_survey") and item in rec["simulated_survey"]]
+            vals = [
+                rec["simulated_survey"][item]
+                for rec in by_cond[c]
+                if rec.get("simulated_survey") and item in rec["simulated_survey"]
+            ]
             groups.append(vals)
             m = fmt(np.mean(vals))
             sd = fmt(np.std(vals, ddof=1))
@@ -229,9 +255,15 @@ def analyze_subset(data, label):
             print(f"    {c:12s}: M = {m}, SD = {sd} (n = {len(vals)})")
 
         # Kruskal-Wallis for key manipulation check items
-        if item in ("perceived_disagreement", "perceived_breadth",
-                     "cognitive_load", "perceived_confusion",
-                     "trust_in_advice", "confidence", "ownership"):
+        if item in (
+            "perceived_disagreement",
+            "perceived_breadth",
+            "cognitive_load",
+            "perceived_confusion",
+            "trust_in_advice",
+            "confidence",
+            "ownership",
+        ):
             h, p = kruskal_test(groups)
             item_data["kruskal_wallis"] = {"H": h, "p": p}
             print(f"    Kruskal-Wallis: H = {h}, p = {p}")
@@ -245,8 +277,11 @@ def analyze_subset(data, label):
     print(f"{'─' * 60}")
     resp_wc_results = {}
     for c in CONDITIONS:
-        wcs = [word_count(rec.get("simulated_response", "")) for rec in by_cond[c]
-               if rec.get("simulated_response")]
+        wcs = [
+            word_count(rec.get("simulated_response", ""))
+            for rec in by_cond[c]
+            if rec.get("simulated_response")
+        ]
         m = fmt(np.mean(wcs))
         sd = fmt(np.std(wcs, ddof=1))
         resp_wc_results[c] = {"mean": m, "sd": sd}
@@ -278,24 +313,30 @@ def analyze_subset(data, label):
             "total_cost_usd": fmt(np.sum(costs), 4),
         }
         token_results[c] = stats_dict
-        print(f"  {c:12s}: input = {stats_dict['mean_input_tokens']:>7} tok, "
-              f"output = {stats_dict['mean_output_tokens']:>6} tok, "
-              f"wall = {stats_dict['mean_wall_seconds']:>5}s, "
-              f"cost/run = ${stats_dict['mean_cost_usd']:.4f}, "
-              f"total = ${stats_dict['total_cost_usd']:.4f}")
+        print(
+            f"  {c:12s}: input = {stats_dict['mean_input_tokens']:>7} tok, "
+            f"output = {stats_dict['mean_output_tokens']:>6} tok, "
+            f"wall = {stats_dict['mean_wall_seconds']:>5}s, "
+            f"cost/run = ${stats_dict['mean_cost_usd']:.4f}, "
+            f"total = ${stats_dict['total_cost_usd']:.4f}"
+        )
 
     # Overall totals
     all_inp = sum(rec.get("total_input_tokens", 0) for rec in data)
     all_out = sum(rec.get("total_output_tokens", 0) for rec in data)
-    total_cost = (all_inp / 1_000_000) * PRICE_INPUT_PER_M + (all_out / 1_000_000) * PRICE_OUTPUT_PER_M
+    total_cost = (all_inp / 1_000_000) * PRICE_INPUT_PER_M + (
+        all_out / 1_000_000
+    ) * PRICE_OUTPUT_PER_M
     token_results["overall"] = {
         "total_input_tokens": all_inp,
         "total_output_tokens": all_out,
         "total_cost_usd": fmt(total_cost, 4),
         "mean_cost_per_run_usd": fmt(total_cost / len(data), 4),
     }
-    print(f"\n  OVERALL: {all_inp} input tok, {all_out} output tok, "
-          f"total cost = ${total_cost:.4f}, mean/run = ${total_cost / len(data):.4f}")
+    print(
+        f"\n  OVERALL: {all_inp} input tok, {all_out} output tok, "
+        f"total cost = ${total_cost:.4f}, mean/run = ${total_cost / len(data):.4f}"
+    )
     results["token_usage"] = token_results
 
     # ── 8. Pipeline reliability ────────────────────────────────────────
@@ -303,16 +344,21 @@ def analyze_subset(data, label):
     print("8. PIPELINE RELIABILITY")
     print(f"{'─' * 60}")
     total_runs = len(data)
-    error_runs = sum(1 for rec in data
-                     if (rec.get("errors") and len(rec["errors"]) > 0)
-                     or "result" not in rec
-                     or rec.get("result") is None)
+    error_runs = sum(
+        1
+        for rec in data
+        if (rec.get("errors") and len(rec["errors"]) > 0)
+        or "result" not in rec
+        or rec.get("result") is None
+    )
     success_runs = total_runs - error_runs
     reliability_results = {
         "total_runs": total_runs,
         "successful_runs": success_runs,
         "error_runs": error_runs,
-        "success_rate_pct": fmt(100 * success_runs / total_runs if total_runs > 0 else 0, 1),
+        "success_rate_pct": fmt(
+            100 * success_runs / total_runs if total_runs > 0 else 0, 1
+        ),
     }
     results["pipeline_reliability"] = reliability_results
     print(f"  Total runs:      {total_runs}")
@@ -327,7 +373,9 @@ def analyze_subset(data, label):
             missing_result = "result" not in rec or rec.get("result") is None
             if has_err or missing_result:
                 errs = rec.get("errors", [])
-                reason = f"errors={errs}" if has_err else "missing result (pipeline failure)"
+                reason = (
+                    f"errors={errs}" if has_err else "missing result (pipeline failure)"
+                )
                 print(f"    {rec.get('run_id', 'unknown')}: {reason}")
 
     return results
@@ -349,7 +397,9 @@ profiles = sorted(set(rec["profile_id"] for rec in within_data))
 # Build lookup: (profile_id, condition) -> survey
 profile_lookup = {}
 for rec in within_data:
-    profile_lookup[(rec["profile_id"], rec["condition"])] = rec.get("simulated_survey", {})
+    profile_lookup[(rec["profile_id"], rec["condition"])] = rec.get(
+        "simulated_survey", {}
+    )
 
 # Print header
 header = f"{'Profile':8s}"
@@ -375,7 +425,9 @@ for pid in profiles:
 # Print as a readable table per item
 for item in SURVEY_ITEMS:
     print(f"\n  {item}:")
-    print(f"    {'Profile':8s}  {'single':>8s}  {'integrated':>11s}  {'competing':>10s}  {'C-S diff':>8s}")
+    print(
+        f"    {'Profile':8s}  {'single':>8s}  {'integrated':>11s}  {'competing':>10s}  {'C-S diff':>8s}"
+    )
     diffs = []
     for pid in profiles:
         vals = within_profile_table[pid][item]
@@ -387,9 +439,13 @@ for item in SURVEY_ITEMS:
             d = c_val - s_val
             diff = f"{d:+d}" if isinstance(d, int) else f"{d:+.1f}"
             diffs.append(d)
-        print(f"    {pid:8s}  {str(s_val):>8s}  {str(i_val):>11s}  {str(c_val):>10s}  {diff:>8s}")
+        print(
+            f"    {pid:8s}  {str(s_val):>8s}  {str(i_val):>11s}  {str(c_val):>10s}  {diff:>8s}"
+        )
     if diffs:
-        print(f"    {'Mean':8s}  {'':>8s}  {'':>11s}  {'':>10s}  {np.mean(diffs):>+8.2f}")
+        print(
+            f"    {'Mean':8s}  {'':>8s}  {'':>11s}  {'':>10s}  {np.mean(diffs):>+8.2f}"
+        )
 
 all_results["within_profile_table"] = within_profile_table
 
@@ -405,13 +461,23 @@ for rec in subsets["across"]:
 pairwise_results = {}
 for item in ["perceived_disagreement", "perceived_breadth", "cognitive_load"]:
     print(f"\n  {item}:")
-    pairs = [("single", "integrated"), ("single", "competing"), ("integrated", "competing")]
+    pairs = [
+        ("single", "integrated"),
+        ("single", "competing"),
+        ("integrated", "competing"),
+    ]
     item_pairs = {}
     for c1, c2 in pairs:
-        v1 = [rec["simulated_survey"][item] for rec in across_by_cond[c1]
-              if rec.get("simulated_survey") and item in rec.get("simulated_survey", {})]
-        v2 = [rec["simulated_survey"][item] for rec in across_by_cond[c2]
-              if rec.get("simulated_survey") and item in rec.get("simulated_survey", {})]
+        v1 = [
+            rec["simulated_survey"][item]
+            for rec in across_by_cond[c1]
+            if rec.get("simulated_survey") and item in rec.get("simulated_survey", {})
+        ]
+        v2 = [
+            rec["simulated_survey"][item]
+            for rec in across_by_cond[c2]
+            if rec.get("simulated_survey") and item in rec.get("simulated_survey", {})
+        ]
         u_stat, p_val = stats.mannwhitneyu(v1, v2, alternative="two-sided")
         # Effect size: rank-biserial r = 1 - 2U / (n1 * n2)
         n1, n2 = len(v1), len(v2)
@@ -425,8 +491,10 @@ for item in ["perceived_disagreement", "perceived_breadth", "cognitive_load"]:
             "mean1": fmt(np.mean(v1)),
             "mean2": fmt(np.mean(v2)),
         }
-        print(f"    {c1} vs {c2}: U = {u_stat:.1f}, p = {fmt_p(p_val)}, "
-              f"r_rb = {r_rb:.3f} (M1 = {np.mean(v1):.2f}, M2 = {np.mean(v2):.2f})")
+        print(
+            f"    {c1} vs {c2}: U = {u_stat:.1f}, p = {fmt_p(p_val)}, "
+            f"r_rb = {r_rb:.3f} (M1 = {np.mean(v1):.2f}, M2 = {np.mean(v2):.2f})"
+        )
     pairwise_results[item] = item_pairs
 
 all_results["pairwise_comparisons_across"] = pairwise_results
@@ -437,28 +505,37 @@ print("# SUMMARY FOR PAPER")
 print(f"{'#' * 80}")
 
 across = all_results["across_subject"]
-print(f"\nAcross-subject N: {sum(across['sample_sizes'].values())} "
-      f"(single={across['sample_sizes']['single']}, "
-      f"integrated={across['sample_sizes']['integrated']}, "
-      f"competing={across['sample_sizes']['competing']})")
+print(
+    f"\nAcross-subject N: {sum(across['sample_sizes'].values())} "
+    f"(single={across['sample_sizes']['single']}, "
+    f"integrated={across['sample_sizes']['integrated']}, "
+    f"competing={across['sample_sizes']['competing']})"
+)
 print(f"Pipeline success rate: {across['pipeline_reliability']['success_rate_pct']}%")
-print(f"Format compliance: "
-      f"single={across['format_compliance']['single']['pct']}%, "
-      f"integrated={across['format_compliance']['integrated']['pct']}%, "
-      f"competing={across['format_compliance']['competing']['pct']}%")
-print(f"Divergence pass rate: "
-      f"integrated={across['divergence_check']['integrated']['pass_rate_pct']}%, "
-      f"competing={across['divergence_check']['competing']['pass_rate_pct']}%")
+print(
+    f"Format compliance: "
+    f"single={across['format_compliance']['single']['pct']}%, "
+    f"integrated={across['format_compliance']['integrated']['pct']}%, "
+    f"competing={across['format_compliance']['competing']['pct']}%"
+)
+print(
+    f"Divergence pass rate: "
+    f"integrated={across['divergence_check']['integrated']['pass_rate_pct']}%, "
+    f"competing={across['divergence_check']['competing']['pass_rate_pct']}%"
+)
 
 print(f"\nKey manipulation checks (across-subject):")
 for item in ["perceived_disagreement", "perceived_breadth", "cognitive_load"]:
     ss = across["survey_scores"][item]
     kw = ss.get("kruskal_wallis", {})
-    print(f"  {item}: "
-          f"single M={ss['single']['mean']}, "
-          f"integrated M={ss['integrated']['mean']}, "
-          f"competing M={ss['competing']['mean']} | "
-          f"H={kw.get('H')}, p={kw.get('p')}")
+    print(
+        f"  {item}: "
+        f"single M={ss['single']['mean']}, "
+        f"integrated M={ss['integrated']['mean']}, "
+        f"competing M={ss['competing']['mean']} | "
+        f"H={kw.get('H')}, p={kw.get('p')}"
+    )
+
 
 # ── Save results ────────────────────────────────────────────────────────
 # Convert numpy types for JSON serialization

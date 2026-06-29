@@ -75,6 +75,7 @@ async def admin_login(credentials: dict):
     if password == settings.ADMIN_API_KEY:
         return {"api_key": settings.ADMIN_API_KEY}
     from fastapi import HTTPException
+
     raise HTTPException(status_code=401, detail="Invalid password")
 
 
@@ -96,12 +97,17 @@ async def check_version(current: str = ""):
 STATIC_DIR = Path(__file__).parent.parent / "static"
 
 if (STATIC_DIR / "admin").exists():
+
     @app.get("/admin")
     async def admin_index():
         return FileResponse(STATIC_DIR / "admin" / "index.html")
-    app.mount("/admin", StaticFiles(directory=STATIC_DIR / "admin", html=True), name="admin")
+
+    app.mount(
+        "/admin", StaticFiles(directory=STATIC_DIR / "admin", html=True), name="admin"
+    )
 
 if (STATIC_DIR / "app").exists():
+
     @app.get("/interview")
     async def interview_index():
         """V2 interview platform."""
@@ -116,4 +122,7 @@ if (STATIC_DIR / "app").exists():
             STATIC_DIR / "app" / "index.html",
             headers={"Cache-Control": "no-cache, no-store, must-revalidate"},
         )
-    app.mount("/app", StaticFiles(directory=STATIC_DIR / "app", html=True), name="webapp")
+
+    app.mount(
+        "/app", StaticFiles(directory=STATIC_DIR / "app", html=True), name="webapp"
+    )

@@ -9,12 +9,15 @@ from app.services.scheduler_service import set_session_factory
 
 async def _register_and_consent(client: AsyncClient, code: str) -> str:
     """Register + consent → returns token."""
-    r = await client.post("/api/v1/auth/register", json={
-        "invite_code": code,
-        "name": "Test User",
-        "venture_name": "Test Venture",
-        "industry_vertical": "Agriculture",
-    })
+    r = await client.post(
+        "/api/v1/auth/register",
+        json={
+            "invite_code": code,
+            "name": "Test User",
+            "venture_name": "Test Venture",
+            "industry_vertical": "Agriculture",
+        },
+    )
     token = r.json()["access_token"]
     await client.post(
         "/api/v1/me/consent",
@@ -25,7 +28,9 @@ async def _register_and_consent(client: AsyncClient, code: str) -> str:
 
 
 @pytest.mark.asyncio
-async def test_admin_trigger_creates_conversations(client: AsyncClient, seed_invite_codes, mock_claude):
+async def test_admin_trigger_creates_conversations(
+    client: AsyncClient, seed_invite_codes, mock_claude
+):
     """Test that manually triggering the scheduler creates system-initiated conversations."""
     # Register and consent all 3 test participants
     token1 = await _register_and_consent(client, "TEST001A")
@@ -34,10 +39,14 @@ async def test_admin_trigger_creates_conversations(client: AsyncClient, seed_inv
 
     # Point scheduler at test DB
     from tests.conftest import TestSession
+
     set_session_factory(TestSession)
 
     # Trigger conversations for all
-    with patch("app.services.notification_service.NotificationService.send_push", new_callable=AsyncMock) as mock_push:
+    with patch(
+        "app.services.notification_service.NotificationService.send_push",
+        new_callable=AsyncMock,
+    ) as mock_push:
         mock_push.return_value = None
         response = await client.post("/api/v1/admin/trigger/all")
 
@@ -65,13 +74,16 @@ async def test_admin_schedule_crud(client: AsyncClient):
     assert r.json()["day_of_week"] == "mon"
 
     # Update schedule
-    r = await client.put("/api/v1/admin/schedule", json={
-        "cohort_id": "pilot_2026",
-        "day_of_week": "wed",
-        "hour": 7,
-        "minute": 30,
-        "timezone": "UTC",
-    })
+    r = await client.put(
+        "/api/v1/admin/schedule",
+        json={
+            "cohort_id": "pilot_2026",
+            "day_of_week": "wed",
+            "hour": 7,
+            "minute": 30,
+            "timezone": "UTC",
+        },
+    )
     assert r.status_code == 200
 
     # Verify update
@@ -82,12 +94,16 @@ async def test_admin_schedule_crud(client: AsyncClient):
 
 
 @pytest.mark.asyncio
-async def test_notification_tracking(client: AsyncClient, seed_invite_codes, mock_claude):
+async def test_notification_tracking(
+    client: AsyncClient, seed_invite_codes, mock_claude
+):
     """Test marking notifications as delivered and opened."""
     token = await _register_and_consent(client, "TEST001A")
 
     # Create a conversation (generates a greeting message)
-    r = await client.post("/api/v1/conversations", headers={"Authorization": f"Bearer {token}"})
+    r = await client.post(
+        "/api/v1/conversations", headers={"Authorization": f"Bearer {token}"}
+    )
     conv = r.json()
 
     # The notification tracking endpoints expect a valid notification ID.

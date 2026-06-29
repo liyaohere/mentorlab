@@ -17,9 +17,16 @@ router = APIRouter(prefix="/api/v1/voice", tags=["voice"])
 MAX_AUDIO_SIZE = 25 * 1024 * 1024
 
 ALLOWED_AUDIO_TYPES = {
-    "audio/mp4", "audio/m4a", "audio/mpeg", "audio/ogg",
-    "audio/opus", "audio/webm", "audio/wav", "audio/x-wav",
-    "audio/aac", "audio/x-m4a",
+    "audio/mp4",
+    "audio/m4a",
+    "audio/mpeg",
+    "audio/ogg",
+    "audio/opus",
+    "audio/webm",
+    "audio/wav",
+    "audio/x-wav",
+    "audio/aac",
+    "audio/x-m4a",
 }
 
 
@@ -57,7 +64,9 @@ async def transcribe_audio(
     audio_url = None
     if conversation_id:
         audio_url = await storage_service.upload_audio(
-            audio, str(participant.id), conversation_id,
+            audio,
+            str(participant.id),
+            conversation_id,
         )
 
     # 2. Transcribe via Whisper

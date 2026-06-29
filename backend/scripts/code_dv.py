@@ -122,10 +122,7 @@ async def code_response(client, profile: dict, response: str, run_id: str) -> di
         context_parts.append(f"Current plan: {intake['current_plan']}")
     intake_context = "\n".join(context_parts)
 
-    prompt = CODING_PROMPT.format(
-        intake_context=intake_context,
-        response=response
-    )
+    prompt = CODING_PROMPT.format(intake_context=intake_context, response=response)
 
     for attempt in range(3):
         try:
@@ -146,7 +143,7 @@ async def code_response(client, profile: dict, response: str, run_id: str) -> di
             return result
         except Exception as e:
             if attempt < 2:
-                await asyncio.sleep(2 ** attempt)
+                await asyncio.sleep(2**attempt)
             else:
                 print(f"  ERROR coding {run_id}: {e}")
                 return {"run_id": run_id, "error": str(e)}
@@ -154,6 +151,7 @@ async def code_response(client, profile: dict, response: str, run_id: str) -> di
 
 async def main():
     from openai import AsyncOpenAI
+
     client = AsyncOpenAI(api_key=os.environ["OPENAI_API_KEY"])
 
     # Load profiles
@@ -170,11 +168,17 @@ async def main():
     with open(jsonl_file) as f:
         for line in f:
             rec = json.loads(line)
-            if rec["test_type"] == "across" and "result" in rec and rec.get("simulated_response"):
+            if (
+                rec["test_type"] == "across"
+                and "result" in rec
+                and rec.get("simulated_response")
+            ):
                 across_runs.append(rec)
 
     print(f"Coding {len(across_runs)} across-subject responses...")
-    print(f"Conditions: { {c: sum(1 for r in across_runs if r['condition']==c) for c in ['single','integrated','competing']} }")
+    print(
+        f"Conditions: { {c: sum(1 for r in across_runs if r['condition'] == c) for c in ['single', 'integrated', 'competing']} }"
+    )
 
     # Code all responses with concurrency limit
     sem = asyncio.Semaphore(3)
@@ -205,18 +209,27 @@ async def main():
     print(f"Raw results saved to {out_path}")
 
     # Analyze by condition
-    dims = ["cause_clarity", "causal_evaluation", "assumption_identification",
-            "discriminating_evidence", "cause_action_coherence", "comprehensiveness", "novelty"]
+    dims = [
+        "cause_clarity",
+        "causal_evaluation",
+        "assumption_identification",
+        "discriminating_evidence",
+        "cause_action_coherence",
+        "comprehensiveness",
+        "novelty",
+    ]
 
-    print("\n" + "="*70)
+    print("\n" + "=" * 70)
     print("PROBLEM FORMULATION QUALITY BY CONDITION (AI-coded, directional only)")
-    print("="*70)
+    print("=" * 70)
 
     from statistics import mean, stdev
 
     cond_data = {}
     for cond in ["single", "integrated", "competing"]:
-        cond_results = [r for r in results if r["condition"] == cond and "error" not in r]
+        cond_results = [
+            r for r in results if r["condition"] == cond and "error" not in r
+        ]
         cond_data[cond] = cond_results
         print(f"\n--- Condition: {cond} (N={len(cond_results)}) ---")
         for dim in dims:
@@ -224,14 +237,18 @@ async def main():
             if vals:
                 m = mean(vals)
                 s = stdev(vals) if len(vals) > 1 else 0
-                print(f"  {dim:30s}: M={m:.2f}  SD={s:.2f}  range=[{min(vals)}, {max(vals)}]")
+                print(
+                    f"  {dim:30s}: M={m:.2f}  SD={s:.2f}  range=[{min(vals)}, {max(vals)}]"
+                )
 
     # Composite score (mean of 5 primary dimensions)
-    print("\n" + "="*70)
+    print("\n" + "=" * 70)
     print("COMPOSITE SCORE (mean of 5 primary dimensions)")
-    print("="*70)
+    print("=" * 70)
     for cond in ["single", "integrated", "competing"]:
-        cond_results = [r for r in results if r["condition"] == cond and "error" not in r]
+        cond_results = [
+            r for r in results if r["condition"] == cond and "error" not in r
+        ]
         composites = []
         for r in cond_results:
             primary = [r.get(d) for d in dims[:5] if r.get(d) is not None]
@@ -243,15 +260,17 @@ async def main():
             print(f"  {cond:15s}: M={m:.2f}  SD={s:.2f}")
 
     # Kruskal-Wallis for each dimension
-    print("\n" + "="*70)
+    print("\n" + "=" * 70)
     print("KRUSKAL-WALLIS TESTS")
-    print("="*70)
+    print("=" * 70)
     from scipy.stats import kruskal, mannwhitneyu
 
     for dim in dims + ["composite"]:
         groups = []
         for cond in ["single", "integrated", "competing"]:
-            cond_results = [r for r in results if r["condition"] == cond and "error" not in r]
+            cond_results = [
+                r for r in results if r["condition"] == cond and "error" not in r
+            ]
             if dim == "composite":
                 vals = []
                 for r in cond_results:
@@ -265,19 +284,23 @@ async def main():
         if all(len(g) > 0 for g in groups):
             H, p = kruskal(*groups)
             m1, m2, m3 = mean(groups[0]), mean(groups[1]), mean(groups[2])
-            print(f"  {dim:30s}: C1={m1:.2f}  C2={m2:.2f}  C3={m3:.2f}  H={H:.2f}  p={p:.4f}")
+            print(
+                f"  {dim:30s}: C1={m1:.2f}  C2={m2:.2f}  C3={m3:.2f}  H={H:.2f}  p={p:.4f}"
+            )
 
             # Pairwise: C3 vs C2 (H1), C2 vs C1 (H2)
             if p < 0.10:
-                U_32, p_32 = mannwhitneyu(groups[2], groups[1], alternative='greater')
-                U_21, p_21 = mannwhitneyu(groups[1], groups[0], alternative='greater')
-                U_31, p_31 = mannwhitneyu(groups[2], groups[0], alternative='greater')
-                print(f"    Pairwise (one-sided): C3>C2 p={p_32:.4f}  C2>C1 p={p_21:.4f}  C3>C1 p={p_31:.4f}")
+                U_32, p_32 = mannwhitneyu(groups[2], groups[1], alternative="greater")
+                U_21, p_21 = mannwhitneyu(groups[1], groups[0], alternative="greater")
+                U_31, p_31 = mannwhitneyu(groups[2], groups[0], alternative="greater")
+                print(
+                    f"    Pairwise (one-sided): C3>C2 p={p_32:.4f}  C2>C1 p={p_21:.4f}  C3>C1 p={p_31:.4f}"
+                )
 
     # Print a few example rationales
-    print("\n" + "="*70)
+    print("\n" + "=" * 70)
     print("SAMPLE RATIONALES (1 per condition)")
-    print("="*70)
+    print("=" * 70)
     for cond in ["single", "integrated", "competing"]:
         for r in results:
             if r["condition"] == cond and "brief_rationale" in r:

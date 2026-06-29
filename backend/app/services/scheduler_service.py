@@ -4,6 +4,7 @@ Scheduler for AI-initiated conversations.
 Uses APScheduler to fire weekly conversation initiations at configured times.
 Each cohort can have its own schedule (day_of_week, hour, minute, timezone).
 """
+
 import logging
 from datetime import datetime, timezone
 
@@ -185,14 +186,19 @@ def stop_scheduler():
         logger.info("Scheduler stopped")
 
 
-def update_cohort_schedule(cohort_id: str, day_of_week: str, hour: int, minute: int, tz: str = "UTC"):
+def update_cohort_schedule(
+    cohort_id: str, day_of_week: str, hour: int, minute: int, tz: str = "UTC"
+):
     """Add or update a cohort-specific schedule."""
-    set_schedule(cohort_id, {
-        "day_of_week": day_of_week,
-        "hour": hour,
-        "minute": minute,
-        "timezone": tz,
-    })
+    set_schedule(
+        cohort_id,
+        {
+            "day_of_week": day_of_week,
+            "hour": hour,
+            "minute": minute,
+            "timezone": tz,
+        },
+    )
 
     job_id = f"initiator_{cohort_id}"
 
@@ -209,4 +215,6 @@ def update_cohort_schedule(cohort_id: str, day_of_week: str, hour: int, minute: 
             replace_existing=True,
             kwargs={"cohort_id": cohort_id},
         )
-        logger.info(f"Cohort schedule updated: {cohort_id} → {day_of_week} {hour:02d}:{minute:02d} {tz}")
+        logger.info(
+            f"Cohort schedule updated: {cohort_id} → {day_of_week} {hour:02d}:{minute:02d} {tz}"
+        )

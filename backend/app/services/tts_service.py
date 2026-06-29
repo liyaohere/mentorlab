@@ -46,7 +46,9 @@ class TTSService:
                 response.raise_for_status()
                 return response.content
             except httpx.HTTPStatusError as e:
-                logger.error(f"TTS API error: {e.response.status_code} {e.response.text}")
+                logger.error(
+                    f"TTS API error: {e.response.status_code} {e.response.text}"
+                )
                 return b""
             except httpx.RequestError as e:
                 logger.error(f"TTS connection error: {e}")

@@ -4,18 +4,25 @@ import pytest
 from httpx import AsyncClient
 
 
-async def _setup_conversation(client: AsyncClient, code: str = "TEST001A") -> tuple[str, str]:
+async def _setup_conversation(
+    client: AsyncClient, code: str = "TEST001A"
+) -> tuple[str, str]:
     """Register, create conversation, return (token, conversation_id)."""
-    r = await client.post("/api/v1/auth/register", json={
-        "invite_code": code,
-        "name": "Test User",
-        "venture_name": "Test Venture",
-        "venture_description": "A test venture",
-        "industry_vertical": "Agriculture",
-    })
+    r = await client.post(
+        "/api/v1/auth/register",
+        json={
+            "invite_code": code,
+            "name": "Test User",
+            "venture_name": "Test Venture",
+            "venture_description": "A test venture",
+            "industry_vertical": "Agriculture",
+        },
+    )
     token = r.json()["access_token"]
 
-    r2 = await client.post("/api/v1/conversations", headers={"Authorization": f"Bearer {token}"})
+    r2 = await client.post(
+        "/api/v1/conversations", headers={"Authorization": f"Bearer {token}"}
+    )
     conv_id = r2.json()["conversation"]["id"]
     return token, conv_id
 
@@ -55,8 +62,12 @@ async def test_message_idempotency(client: AsyncClient, seed_invite_codes, mock_
     headers = {"Authorization": f"Bearer {token}"}
 
     # Send twice with same client_id
-    r1 = await client.post(f"/api/v1/conversations/{conv_id}/messages", json=payload, headers=headers)
-    r2 = await client.post(f"/api/v1/conversations/{conv_id}/messages", json=payload, headers=headers)
+    r1 = await client.post(
+        f"/api/v1/conversations/{conv_id}/messages", json=payload, headers=headers
+    )
+    r2 = await client.post(
+        f"/api/v1/conversations/{conv_id}/messages", json=payload, headers=headers
+    )
 
     assert r1.status_code == 201
     assert r2.status_code == 201
@@ -100,15 +111,24 @@ async def test_sync_idempotent(client: AsyncClient, seed_invite_codes, mock_clau
     headers = {"Authorization": f"Bearer {token}"}
 
     client_id = str(uuid.uuid4())
-    messages = [{
-        "conversation_id": conv_id,
-        "content": "Same message",
-        "input_method": "text",
-        "client_id": client_id,
-    }]
+    messages = [
+        {
+            "conversation_id": conv_id,
+            "content": "Same message",
+            "input_method": "text",
+            "client_id": client_id,
+        }
+    ]
 
     # Sync twice
-    r1 = await client.post("/api/v1/sync/messages", json={"messages": messages}, headers=headers)
-    r2 = await client.post("/api/v1/sync/messages", json={"messages": messages}, headers=headers)
+    r1 = await client.post(
+        "/api/v1/sync/messages", json={"messages": messages}, headers=headers
+    )
+    r2 = await client.post(
+        "/api/v1/sync/messages", json={"messages": messages}, headers=headers
+    )
 
-    assert r1.json()["results"][0]["user_message"]["id"] == r2.json()["results"][0]["user_message"]["id"]
+    assert (
+        r1.json()["results"][0]["user_message"]["id"]
+        == r2.json()["results"][0]["user_message"]["id"]
+    )
