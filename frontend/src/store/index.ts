@@ -15,8 +15,8 @@ interface AppState {
   conversationId: string | null;
   condition: string | null;
   phase: AppPhase;
-  responsePrompt: string | null; // 存放所有的统一中立提问
-  readingTime: number; // 存放阅读时间（秒）
+  responsePrompt: string | null;
+  readingTime: number;
 
   setAuth: (token: string) => void;
   setInterviewData: (convId: string, condition: string) => void;

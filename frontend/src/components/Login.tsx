@@ -35,7 +35,7 @@ export function Login() {
   return (
     <div className="login-screen">
       <div className="login-card">
-        <h1 className="logo">Mentor<span>Lab</span></h1>
+        <h1 className="logo">MentorLab</h1>
         <p className="tagline">AI-powered business interview</p>
 
         <form className="form-box" onSubmit={handleLogin}>
