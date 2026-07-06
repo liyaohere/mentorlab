@@ -354,6 +354,60 @@ button:disabled {
 .voice-status.recording {
   color: var(--primary);
 }
+/* --- Voice Recording Ripple Animation --- */
+.mic-ripple-wrapper {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.btn-mic.recording-active {
+  background: #fee2e2; /* 浅红色背景 */
+  border-color: var(--primary);
+  color: var(--primary);
+  z-index: 2; /* 确保按钮在涟漪上方 */
+}
+
+/* 核心水波纹伪元素 */
+.btn-mic.recording-active::before,
+.btn-mic.recording-active::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  border-radius: 50%;
+  border: 2px solid var(--primary);
+  z-index: 1;
+  animation: ripple 1.5s linear infinite;
+}
+
+/* 第二道波纹，延迟播放产生层次感 */
+.btn-mic.recording-active::after {
+  animation-delay: 0.75s;
+}
+
+@keyframes ripple {
+  0% {
+    transform: scale(1);
+    opacity: 0.8;
+  }
+  100% {
+    transform: scale(1.6);
+    opacity: 0;
+  }
+}
+
+.recording-timer {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: monospace;
+  font-size: 15px;
+  margin-left: 8px;
+}
 .btn-stop-rec {
   color: #fff;
   border-radius: 16px;

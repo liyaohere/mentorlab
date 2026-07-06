@@ -98,9 +98,15 @@ export function VoiceInput({ conversationId, onTranscription, disabled }: VoiceI
   if (status === 'recording') {
     return (
       <div className="voice-status recording">
-        <span className="rec-dot"></span>
-        Recording: 0:{seconds.toString().padStart(2, '0')}
-        <button type="button" className="btn-stop-rec" onClick={stopRecording}>Stop</button>
+        <div className="mic-ripple-wrapper">
+          <button type="button" className="btn-mic recording-active" onClick={stopRecording}>
+            🛑
+          </button>
+        </div>
+        <div className="recording-timer">
+          <span className="rec-dot"></span>
+          0:{seconds.toString().padStart(2, '0')}
+        </div>
       </div>
     );
   }
