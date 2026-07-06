@@ -110,8 +110,7 @@ export function Intake() {
       </div>
 
       <form className="chat-input-area" onSubmit={handleSend}>
-        <input
-          type="text"
+        <textarea
           className="chat-input"
           placeholder="Type or speak your answer..."
           value={input}
