@@ -38,7 +38,6 @@ export function Response() {
     }
   };
 
-  // 处理语音转录结果，追加到已有文本后
   const handleTranscription = (transcript: string) => {
     setText(prev => prev ? `${prev} ${transcript}` : transcript);
   };

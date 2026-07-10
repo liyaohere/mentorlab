@@ -2,6 +2,7 @@
 import { useState, useEffect, useRef } from 'preact/hooks';
 import { useStore } from '../store';
 import { apiFetch } from '../utils/api';
+import { renderMd } from '../utils/md.ts'
 
 export function Diagnosis() {
   const { conversationId, condition, setPhase, setDiagnosisData } = useStore();
@@ -9,14 +10,11 @@ export function Diagnosis() {
   const [diagnoses, setDiagnoses] = useState<string[]>([]);
   const [promptText, setPromptText] = useState('');
 
-  // C3 专用的选择状态
   const [selectedReading, setSelectedReading] = useState<number | null>(null);
   const [submitting, setSubmitting] = useState(false);
 
-  // 隐形计时器
   const startTimeRef = useRef<number>(0);
 
-  // 挂载时立即请求 AI 生成诊断
   useEffect(() => {
     async function fetchDiagnosis() {
       if (!conversationId) return;
@@ -84,7 +82,7 @@ export function Diagnosis() {
               onClick={() => setSelectedReading(index)}
             >
               <h3 className="card-label">{labels[index]}</h3>
-              <p>{diag}</p>
+              <p dangerouslySetInnerHTML={{ __html: renderMd(diag) }} />
             </div>
           ))}
         </div>
@@ -103,12 +101,11 @@ export function Diagnosis() {
     );
   }
 
-  // C1 和 C2 实验组：展示单一结果
   return (
     <div className="diagnosis-container">
       <h2>Your Business Diagnosis</h2>
       <div className="diagnosis-card single">
-        <p>{diagnoses[0]}</p>
+        <p dangerouslySetInnerHTML={{ __html: renderMd(diagnoses[0]) }} />
       </div>
       <button
         className="btn-primary full-width"
