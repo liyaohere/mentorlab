@@ -405,7 +405,7 @@ async def run_across_subject(
     concurrency: int,
 ) -> list[dict]:
     """Test B: 60 profiles, stratified randomization, 20 per condition."""
-    across_profiles = profiles[15:75]
+    across_profiles = profiles[0:150]
 
     # Stratified randomization by industry_vertical
     by_industry: dict[str, list[dict]] = {}

@@ -211,11 +211,11 @@ async def main():
     else:
         model = "gpt-4o"
 
-    print("Generating 75 synthetic Ugandan entrepreneur profiles...")
+    print("Generating synthetic Ugandan entrepreneur profiles...")
     print(f"Model: {model}")
     print()
 
-    profiles = await generate_profiles(75, model=model)
+    profiles = await generate_profiles(150, model=model)
 
     # Validate
     industries = {}
