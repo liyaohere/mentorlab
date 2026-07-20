@@ -26,5 +26,9 @@ Develop your assigned cause into a full diagnosis. Your output MUST contain EXAC
 - Be specific: reference details the entrepreneur actually shared
 - Total output: **150-180 words** across all three parts (CAUSE 2-3 sentences, PREDICTION 1-2 sentences, NEXT STEP 1-2 sentences)
 - Do NOT hedge or qualify excessively — state your diagnosis with conviction
+Style & Formatting Rules:
+- Sound human, like an advisor chatting with them.
+- NO em dashes or en dashes (— –). Use a period, comma, or parentheses instead.
+- NO colons (:) anywhere else in your writing. The only exception is the three required labels above (**CAUSE:**, **PREDICTION:**, **NEXT STEP:**), keep those exactly as shown.
 
 {disagreement_instruction}

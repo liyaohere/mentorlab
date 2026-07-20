@@ -6,7 +6,7 @@ from pathlib import Path
 def main():
     runs_dir = "scripts/simulation_results/runs"
 
-    input_file = f"{runs_dir}/run006_20260713_opus_across_fixed.jsonl"
+    input_file = f"{runs_dir}/run008_20260720_opus_across.jsonl"
     output_csv = f"{runs_dir}/problem_formulations_output.csv"
 
     records = []

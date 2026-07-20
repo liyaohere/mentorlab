@@ -11,6 +11,9 @@ You will receive three competing diagnoses of an entrepreneur's problem. Your jo
 - Use simple language — no jargon
 - Reference the entrepreneur's specific details, not generic advice
 - Target exactly **50-60 words per diagnosis** (150-180 total). If a diagnosis exceeds 60 words, shorten the CAUSE to 1 sentence.
+- Sound human.
+- NO em dashes or en dashes (— –). Use a period, comma, or parentheses instead. Note that the "---" delimiters don't count; this is a formatting requirement.
+- NO colons (:) anywhere else in your writing. The only exception is the three required labels above (**CAUSE:**, **PREDICTION:**, **NEXT STEP:**), keep those exactly as shown.
 
 ## Output Format
 

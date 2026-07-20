@@ -489,7 +489,7 @@ async def main():
     if len(profiles) < 75:
         print(f"WARNING: Expected 75 profiles, got {len(profiles)}")
 
-    tracker = TokenTracker(model=model, max_tokens=300)
+    tracker = TokenTracker(model=model, max_tokens=600)
     all_results = []
     overall_start = time.time()
 
