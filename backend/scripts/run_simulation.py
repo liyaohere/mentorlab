@@ -370,8 +370,7 @@ async def run_within_subject(
     tracker: TokenTracker,
     concurrency: int,
 ) -> list[dict]:
-    """Test A: Each of 15 profiles runs through all 3 conditions."""
-    within_profiles = profiles[:15]
+    within_profiles = profiles[:150]
     conditions = ["single", "integrated", "competing"]
     semaphore = asyncio.Semaphore(concurrency)
 
@@ -404,7 +403,6 @@ async def run_across_subject(
     tracker: TokenTracker,
     concurrency: int,
 ) -> list[dict]:
-    """Test B: 60 profiles, stratified randomization, 20 per condition."""
     across_profiles = profiles[0:150]
 
     # Stratified randomization by industry_vertical
