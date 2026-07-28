@@ -219,15 +219,13 @@ async def simulate_survey(
     tracker: TokenTracker,
     profile: dict,
     diagnosis_shown: str | list[str],
-    condition: str,
 ) -> dict:
     """AI role-plays the entrepreneur rating the 7 Likert survey items."""
     if isinstance(diagnosis_shown, list):
         advice_text = "\n\n---\n\n".join(diagnosis_shown)
-        framing = "three different competing analyses"
     else:
         advice_text = diagnosis_shown
-        framing = "a single analysis"
+    framing = "an analysis"
 
     items_text = "\n".join(f'  "{key}": <1-7>  // {desc}' for key, desc in SURVEY_ITEMS)
 
@@ -235,8 +233,7 @@ async def simulate_survey(
         f"You are {profile['name']}, a Ugandan entrepreneur. "
         f"You just read {framing} of your business situation.\n\n"
         "Rate each item on a scale of 1 (not at all) to 7 (extremely). "
-        "Be realistic and thoughtful \u2014 consider how the FORMAT of the advice "
-        "(single vs. multiple perspectives) affects your experience.\n\n"
+        "Be realistic and thoughtful."
         "Return ONLY valid JSON, no other text."
     )
 
@@ -320,7 +317,7 @@ async def run_single(
 
         # Simulate survey
         try:
-            sim_survey = await simulate_survey(tracker, profile, shown, condition)
+            sim_survey = await simulate_survey(tracker, profile, shown)
         except Exception as e:
             sim_survey = None
             errors.append(f"survey_sim_error: {str(e)}")
