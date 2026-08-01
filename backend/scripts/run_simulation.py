@@ -367,7 +367,7 @@ async def run_within_subject(
     tracker: TokenTracker,
     concurrency: int,
 ) -> list[dict]:
-    within_profiles = profiles[:150]
+    within_profiles = profiles[:50]
     conditions = ["single", "integrated", "competing"]
     semaphore = asyncio.Semaphore(concurrency)
 
@@ -490,9 +490,7 @@ async def main():
 
     # Run tests
     if args.test in ("within", "both"):
-        print(
-            f"\n--- Test A: Within-Subject (15 profiles x 3 conditions = 45 runs) ---"
-        )
+        print(f"\n--- Test A: Within-Subject ---")
         within_results = await run_within_subject(profiles, tracker, args.concurrency)
         all_results.extend(within_results)
 
@@ -501,7 +499,7 @@ async def main():
         print(f"Completed: {len(within_results)} runs, {errors} with errors")
 
     if args.test in ("across", "both"):
-        print(f"\n--- Test B: Across-Subject (60 profiles, 20/arm = 60 runs) ---")
+        print(f"\n--- Test B: Across-Subject ---")
         across_results = await run_across_subject(profiles, tracker, args.concurrency)
         all_results.extend(across_results)
 
