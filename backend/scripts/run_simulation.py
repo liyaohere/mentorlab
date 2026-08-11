@@ -42,6 +42,7 @@ from app.services.diagnosis_service import DiagnosisService
 PROFILES_PATH = Path(__file__).parent / "simulation_results" / "profiles.json"
 RESULTS_DIR = Path(__file__).parent / "simulation_results"
 
+# Anthropic depreciated some params, including temperature.
 MODEL_MAP = {
     "sonnet": "claude-sonnet-4",
     "opus": "claude-opus-4-8",
@@ -101,9 +102,12 @@ class MockConversation:
 class TokenTracker:
     """Wraps Anthropic or OpenAI client to track tokens per call."""
 
-    def __init__(self, model: str, max_tokens: int = 300):
+    def __init__(
+        self, model: str, max_tokens: int = 300, temperature: float | None = None
+    ):
         self.model = model
         self.max_tokens = max_tokens
+        self.temperature = temperature
         self.call_log: list[dict] = []
         self.use_anthropic = model.startswith("claude")
 
@@ -123,17 +127,28 @@ class TokenTracker:
                 start = time.time()
 
                 if self.use_anthropic:
+                    extra_kwargs = (
+                        {"temperature": self.temperature}
+                        if self.temperature is not None
+                        else {}
+                    )
                     response = await self.client.messages.create(
                         model=self.model,
                         max_tokens=self.max_tokens,
                         system=system_prompt,
                         messages=[{"role": "user", "content": user_message}],
+                        **extra_kwargs,
                     )
                     elapsed = time.time() - start
                     text = response.content[0].text
                     input_tokens = response.usage.input_tokens
                     output_tokens = response.usage.output_tokens
                 else:
+                    extra_kwargs = (
+                        {"temperature": self.temperature}
+                        if self.temperature is not None
+                        else {}
+                    )
                     response = await self.client.chat.completions.create(
                         model=self.model,
                         max_tokens=self.max_tokens,
@@ -141,6 +156,7 @@ class TokenTracker:
                             {"role": "system", "content": system_prompt},
                             {"role": "user", "content": user_message},
                         ],
+                        **extra_kwargs,
                     )
                     elapsed = time.time() - start
                     text = response.choices[0].message.content
@@ -264,12 +280,19 @@ async def simulate_survey(
 async def run_single(
     profile: dict,
     condition: str,
-    tracker: TokenTracker,
+    mentor_tracker: TokenTracker,
+    participant_tracker: TokenTracker,
     semaphore: asyncio.Semaphore,
     run_id: str,
     test_type: str,
 ) -> dict:
-    """Run one complete simulation: diagnosis + simulated response + simulated survey."""
+    """Run one complete simulation: diagnosis + simulated response + simulated survey.
+
+    mentor_tracker drives the mentor/diagnosis pipeline (temperature configurable via
+    --temperature). participant_tracker drives the simulated participant (survey ratings
+    and free-text responses) and always uses the API default temperature, independent of
+    --temperature.
+    """
     async with semaphore:
         start = time.time()
         errors = []
@@ -283,8 +306,8 @@ async def run_single(
             intake_responses=profile["intake_responses"],
         )
 
-        # Create a fresh DiagnosisService with our tracker
-        service = DiagnosisService(ai_caller=tracker.call_ai)
+        # Create a fresh DiagnosisService with our mentor tracker
+        service = DiagnosisService(ai_caller=mentor_tracker.call_ai)
 
         # Run the diagnosis pipeline
         try:
@@ -301,28 +324,30 @@ async def run_single(
                 "timestamp": datetime.now(timezone.utc).isoformat(),
             }
 
-        diagnosis_calls = tracker.pop_log()
+        diagnosis_calls = mentor_tracker.pop_log()
 
         # Get what was shown
         shown = result.get("shown", "")
 
         # Simulate entrepreneur's response
         try:
-            sim_response = await simulate_response(tracker, profile, shown, condition)
+            sim_response = await simulate_response(
+                participant_tracker, profile, shown, condition
+            )
         except Exception as e:
             sim_response = None
             errors.append(f"response_sim_error: {str(e)}")
 
-        response_calls = tracker.pop_log()
+        response_calls = participant_tracker.pop_log()
 
         # Simulate survey
         try:
-            sim_survey = await simulate_survey(tracker, profile, shown)
+            sim_survey = await simulate_survey(participant_tracker, profile, shown)
         except Exception as e:
             sim_survey = None
             errors.append(f"survey_sim_error: {str(e)}")
 
-        survey_calls = tracker.pop_log()
+        survey_calls = participant_tracker.pop_log()
 
         elapsed = round(time.time() - start, 2)
 
@@ -364,10 +389,11 @@ async def run_single(
 
 async def run_within_subject(
     profiles: list[dict],
-    tracker: TokenTracker,
+    mentor_tracker: TokenTracker,
+    participant_tracker: TokenTracker,
     concurrency: int,
 ) -> list[dict]:
-    within_profiles = profiles[:50]
+    within_profiles = profiles[:30]
     conditions = ["single", "integrated", "competing"]
     semaphore = asyncio.Semaphore(concurrency)
 
@@ -376,7 +402,15 @@ async def run_within_subject(
         for cond in conditions:
             run_id = f"within_{profile['id']}_{cond}"
             tasks.append(
-                run_single(profile, cond, tracker, semaphore, run_id, "within")
+                run_single(
+                    profile,
+                    cond,
+                    mentor_tracker,
+                    participant_tracker,
+                    semaphore,
+                    run_id,
+                    "within",
+                )
             )
 
     print(
@@ -397,7 +431,8 @@ async def run_within_subject(
 
 async def run_across_subject(
     profiles: list[dict],
-    tracker: TokenTracker,
+    mentor_tracker: TokenTracker,
+    participant_tracker: TokenTracker,
     concurrency: int,
 ) -> list[dict]:
     across_profiles = profiles[0:150]
@@ -411,7 +446,7 @@ async def run_across_subject(
     conditions = ["single", "integrated", "competing"]
     assigned: list[tuple[dict, str]] = []
 
-    for industry, industry_profiles in by_industry.items():
+    for _, industry_profiles in by_industry.items():
         for i, p in enumerate(industry_profiles):
             cond = conditions[i % 3]
             assigned.append((p, cond))
@@ -420,7 +455,17 @@ async def run_across_subject(
     tasks = []
     for profile, cond in assigned:
         run_id = f"across_{profile['id']}_{cond}"
-        tasks.append(run_single(profile, cond, tracker, semaphore, run_id, "across"))
+        tasks.append(
+            run_single(
+                profile,
+                cond,
+                mentor_tracker,
+                participant_tracker,
+                semaphore,
+                run_id,
+                "across",
+            )
+        )
 
     # Print assignment summary
     cond_counts = {}
@@ -462,6 +507,17 @@ async def main():
     parser.add_argument(
         "--concurrency", type=int, default=10, help="Max concurrent API calls"
     )
+    parser.add_argument(
+        "--temperature",
+        type=float,
+        default=None,
+        help=(
+            "Sampling temperature for the simulated mentor / diagnosis pipeline only. "
+            "Does NOT affect the simulated participant (survey ratings, free-text "
+            "responses), which always uses the API default temperature. "
+            "If omitted, the mentor also uses the API default."
+        ),
+    )
     args = parser.parse_args()
 
     model = MODEL_MAP[args.model]
@@ -469,6 +525,9 @@ async def main():
     print(f"Model: {model}")
     print(f"Test: {args.test}")
     print(f"Concurrency: {args.concurrency}")
+    print(
+        f"Mentor temperature: {args.temperature if args.temperature is not None else 'default'}"
+    )
     print()
 
     # Load profiles
@@ -484,14 +543,23 @@ async def main():
     if len(profiles) < 75:
         print(f"WARNING: Expected 75 profiles, got {len(profiles)}")
 
-    tracker = TokenTracker(model=model, max_tokens=600)
+    # mentor_tracker drives the simulated mentor / diagnosis pipeline; its temperature
+    # is controlled by --temperature. participant_tracker drives the simulated
+    # participant (survey + free-text response) and is intentionally left at the API
+    # default temperature regardless of --temperature.
+    mentor_tracker = TokenTracker(
+        model=model, max_tokens=600, temperature=args.temperature
+    )
+    participant_tracker = TokenTracker(model=model, max_tokens=600)
     all_results = []
     overall_start = time.time()
 
     # Run tests
     if args.test in ("within", "both"):
         print(f"\n--- Test A: Within-Subject ---")
-        within_results = await run_within_subject(profiles, tracker, args.concurrency)
+        within_results = await run_within_subject(
+            profiles, mentor_tracker, participant_tracker, args.concurrency
+        )
         all_results.extend(within_results)
 
         # Quick summary
@@ -500,7 +568,9 @@ async def main():
 
     if args.test in ("across", "both"):
         print(f"\n--- Test B: Across-Subject ---")
-        across_results = await run_across_subject(profiles, tracker, args.concurrency)
+        across_results = await run_across_subject(
+            profiles, mentor_tracker, participant_tracker, args.concurrency
+        )
         all_results.extend(across_results)
 
         errors = sum(1 for r in across_results if r.get("errors"))

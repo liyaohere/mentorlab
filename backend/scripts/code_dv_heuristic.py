@@ -315,13 +315,13 @@ def novelty_score(text: str) -> float:
 
 def main():
     runs_dir = Path(__file__).parent / "simulation_results" / "runs"
-    jsonl_file = runs_dir / "run010_20260730_opus_across.jsonl"
+    jsonl_file = runs_dir / "run015_20260807_gpt4o_within.jsonl"
 
     across_runs = []
     with open(jsonl_file) as f:
         for line in f:
             rec = json.loads(line)
-            if rec["test_type"] == "across" and rec.get("simulated_response"):
+            if rec["test_type"] == "within" and rec.get("simulated_response"):
                 across_runs.append(rec)
 
     print(f"Coding {len(across_runs)} across-subject responses (heuristic)...")
