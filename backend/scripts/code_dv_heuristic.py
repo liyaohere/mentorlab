@@ -315,7 +315,7 @@ def novelty_score(text: str) -> float:
 
 def main():
     runs_dir = Path(__file__).parent / "simulation_results" / "runs"
-    jsonl_file = runs_dir / "run015_20260807_gpt4o_within.jsonl"
+    jsonl_file = runs_dir / "run019_20260813_gpt4o_within.jsonl"
 
     across_runs = []
     with open(jsonl_file) as f:

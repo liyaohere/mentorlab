@@ -103,11 +103,16 @@ class TokenTracker:
     """Wraps Anthropic or OpenAI client to track tokens per call."""
 
     def __init__(
-        self, model: str, max_tokens: int = 300, temperature: float | None = None
+        self,
+        model: str,
+        max_tokens: int = 300,
+        temperature: float | None = None,
+        presence_penalty: float | None = None,
     ):
         self.model = model
         self.max_tokens = max_tokens
         self.temperature = temperature
+        self.presence_penalty = presence_penalty
         self.call_log: list[dict] = []
         self.use_anthropic = model.startswith("claude")
 
@@ -127,11 +132,8 @@ class TokenTracker:
                 start = time.time()
 
                 if self.use_anthropic:
-                    extra_kwargs = (
-                        {"temperature": self.temperature}
-                        if self.temperature is not None
-                        else {}
-                    )
+                    # Does Anthropic support presence_penalty?
+                    extra_kwargs = {}
                     response = await self.client.messages.create(
                         model=self.model,
                         max_tokens=self.max_tokens,
@@ -144,11 +146,12 @@ class TokenTracker:
                     input_tokens = response.usage.input_tokens
                     output_tokens = response.usage.output_tokens
                 else:
-                    extra_kwargs = (
-                        {"temperature": self.temperature}
-                        if self.temperature is not None
-                        else {}
-                    )
+                    extra_kwargs = {}
+                    if self.temperature is not None:
+                        extra_kwargs["temperature"] = self.temperature
+                    if self.presence_penalty is not None:
+                        extra_kwargs["presence_penalty"] = self.presence_penalty
+
                     response = await self.client.chat.completions.create(
                         model=self.model,
                         max_tokens=self.max_tokens,
@@ -518,6 +521,12 @@ async def main():
             "If omitted, the mentor also uses the API default."
         ),
     )
+    parser.add_argument(
+        "--presence-penalty",
+        type=float,
+        default=None,
+        help="Presence penalty for OpenAI models (-2.0 to 2.0). Ignored for Claude models.",
+    )
     args = parser.parse_args()
 
     model = MODEL_MAP[args.model]
@@ -548,7 +557,10 @@ async def main():
     # participant (survey + free-text response) and is intentionally left at the API
     # default temperature regardless of --temperature.
     mentor_tracker = TokenTracker(
-        model=model, max_tokens=600, temperature=args.temperature
+        model=model,
+        max_tokens=600,
+        temperature=args.temperature,
+        presence_penalty=args.presence_penalty,
     )
     participant_tracker = TokenTracker(model=model, max_tokens=600)
     all_results = []
